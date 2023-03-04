@@ -1,0 +1,1827 @@
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"zigbee_edc24.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.CalculateChecksum,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	CalculateChecksum:
+  26              	.LVL0:
+  27              	.LFB132:
+  28              		.file 1 "Core/Src/zigbee_edc24.c"
+   1:Core/Src/zigbee_edc24.c **** #include "zigbee_edc24.h"
+   2:Core/Src/zigbee_edc24.c **** #include "jy62.h"
+   3:Core/Src/zigbee_edc24.c **** #include "main.h"
+   4:Core/Src/zigbee_edc24.c **** #include "usart.h"
+   5:Core/Src/zigbee_edc24.c **** 
+   6:Core/Src/zigbee_edc24.c **** #define MAX_MSG_LEN 200
+   7:Core/Src/zigbee_edc24.c **** #define MAX_INFO_LEN 100
+   8:Core/Src/zigbee_edc24.c **** #define MAX_STATUS_LEN 150
+   9:Core/Src/zigbee_edc24.c **** 
+  10:Core/Src/zigbee_edc24.c **** uint8_t zigbeeMessage[MAX_MSG_LEN];    //原始数据
+  11:Core/Src/zigbee_edc24.c **** uint8_t gameInfoMessage[MAX_INFO_LEN]; //游戏信息数据�?0x01)
+  12:Core/Src/zigbee_edc24.c **** uint8_t gameStatusMessage[MAX_STATUS_LEN]; //游戏状态数据（0x05�?
+  13:Core/Src/zigbee_edc24.c **** uint8_t zigbeeSend[2][6]={0x55,0xAA,0x00,0x00,0x00,0x00,
+  14:Core/Src/zigbee_edc24.c ****                           0x55,0xAA,0x02,0x00,0x00,0x00};        //小车可能发送的信息�?0
+  15:Core/Src/zigbee_edc24.c **** 
+  16:Core/Src/zigbee_edc24.c **** /*uint8_t zigbeeMessage_test_1[MSG_LEN_TEST];
+  17:Core/Src/zigbee_edc24.c **** uint8_t zigbeeMessage_test_2[MSG_LEN_TEST];
+  18:Core/Src/zigbee_edc24.c **** uint8_t last_receive=0;*/
+  19:Core/Src/zigbee_edc24.c **** 
+  20:Core/Src/zigbee_edc24.c **** uint8_t receive_flag=0;
+  21:Core/Src/zigbee_edc24.c **** UART_HandleTypeDef* zigbee_huart;
+  22:Core/Src/zigbee_edc24.c **** extern UART_HandleTypeDef* jy62_huart;
+  23:Core/Src/zigbee_edc24.c **** extern uint8_t jy62_flag;
+  24:Core/Src/zigbee_edc24.c **** extern uint8_t receive;
+  25:Core/Src/zigbee_edc24.c **** 
+  26:Core/Src/zigbee_edc24.c **** void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+  27:Core/Src/zigbee_edc24.c **** {
+  28:Core/Src/zigbee_edc24.c ****   //HAL_UART_DeInit(huart);
+  29:Core/Src/zigbee_edc24.c ****   if (huart == zigbee_huart)
+  30:Core/Src/zigbee_edc24.c ****   {
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 2
+
+
+  31:Core/Src/zigbee_edc24.c ****     __HAL_UNLOCK(zigbee_huart);
+  32:Core/Src/zigbee_edc24.c ****     receive_flag=0;
+  33:Core/Src/zigbee_edc24.c ****     HAL_UARTEx_ReceiveToIdle_DMA(zigbee_huart,zigbeeMessage,MAX_MSG_LEN);
+  34:Core/Src/zigbee_edc24.c ****   }
+  35:Core/Src/zigbee_edc24.c **** }
+  36:Core/Src/zigbee_edc24.c **** 
+  37:Core/Src/zigbee_edc24.c **** void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart,uint16_t Size)
+  38:Core/Src/zigbee_edc24.c **** {
+  39:Core/Src/zigbee_edc24.c ****     if(huart == zigbee_huart)
+  40:Core/Src/zigbee_edc24.c ****     {
+  41:Core/Src/zigbee_edc24.c ****         /*rx_size+=Size;
+  42:Core/Src/zigbee_edc24.c ****         if(rx_size<MAX_MSG_LEN-1)
+  43:Core/Src/zigbee_edc24.c ****         {
+  44:Core/Src/zigbee_edc24.c ****             HAL_UARTEx_ReceiveToIdle_DMA(zigbee_huart,zigbeeMessage+rx_size,MAX_MSG_LEN-rx_size);
+  45:Core/Src/zigbee_edc24.c ****         }*/
+  46:Core/Src/zigbee_edc24.c ****         receive_flag=1;
+  47:Core/Src/zigbee_edc24.c ****     }
+  48:Core/Src/zigbee_edc24.c **** }
+  49:Core/Src/zigbee_edc24.c **** 
+  50:Core/Src/zigbee_edc24.c **** static uint8_t CalculateChecksum(const uint8_t data[], int32_t count) 
+  51:Core/Src/zigbee_edc24.c **** {
+  29              		.loc 1 51 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34              		.loc 1 51 1 is_stmt 0 view .LVU1
+  35 0000 8446     		mov	ip, r0
+  52:Core/Src/zigbee_edc24.c ****   uint8_t checksum = 0;
+  36              		.loc 1 52 3 is_stmt 1 view .LVU2
+  37              	.LVL1:
+  53:Core/Src/zigbee_edc24.c ****   for (int32_t i = 0; i < count; ++i) 
+  38              		.loc 1 53 3 view .LVU3
+  39              	.LBB2:
+  40              		.loc 1 53 8 view .LVU4
+  41              		.loc 1 53 16 is_stmt 0 view .LVU5
+  42 0002 0023     		movs	r3, #0
+  43              	.LBE2:
+  52:Core/Src/zigbee_edc24.c ****   uint8_t checksum = 0;
+  44              		.loc 1 52 11 view .LVU6
+  45 0004 1846     		mov	r0, r3
+  46              	.LVL2:
+  47              	.LBB3:
+  48              		.loc 1 53 3 view .LVU7
+  49 0006 03E0     		b	.L2
+  50              	.LVL3:
+  51              	.L3:
+  54:Core/Src/zigbee_edc24.c ****   {
+  55:Core/Src/zigbee_edc24.c ****     checksum ^= data[i];
+  52              		.loc 1 55 5 is_stmt 1 discriminator 3 view .LVU8
+  53              		.loc 1 55 21 is_stmt 0 discriminator 3 view .LVU9
+  54 0008 1CF80320 		ldrb	r2, [ip, r3]	@ zero_extendqisi2
+  55              		.loc 1 55 14 discriminator 3 view .LVU10
+  56 000c 5040     		eors	r0, r0, r2
+  57              	.LVL4:
+  53:Core/Src/zigbee_edc24.c ****   for (int32_t i = 0; i < count; ++i) 
+  58              		.loc 1 53 34 is_stmt 1 discriminator 3 view .LVU11
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 3
+
+
+  59 000e 0133     		adds	r3, r3, #1
+  60              	.LVL5:
+  61              	.L2:
+  53:Core/Src/zigbee_edc24.c ****   for (int32_t i = 0; i < count; ++i) 
+  62              		.loc 1 53 25 discriminator 1 view .LVU12
+  63 0010 8B42     		cmp	r3, r1
+  64 0012 F9DB     		blt	.L3
+  65              	.LBE3:
+  56:Core/Src/zigbee_edc24.c ****   }
+  57:Core/Src/zigbee_edc24.c ****   return checksum;
+  66              		.loc 1 57 3 view .LVU13
+  58:Core/Src/zigbee_edc24.c **** }
+  67              		.loc 1 58 1 is_stmt 0 view .LVU14
+  68 0014 7047     		bx	lr
+  69              		.cfi_endproc
+  70              	.LFE132:
+  72              		.section	.text.change_float_data,"ax",%progbits
+  73              		.align	1
+  74              		.syntax unified
+  75              		.thumb
+  76              		.thumb_func
+  78              	change_float_data:
+  79              	.LVL6:
+  80              	.LFB133:
+  59:Core/Src/zigbee_edc24.c **** 
+  60:Core/Src/zigbee_edc24.c **** static float change_float_data(uint8_t* dat)
+  61:Core/Src/zigbee_edc24.c **** {
+  81              		.loc 1 61 1 is_stmt 1 view -0
+  82              		.cfi_startproc
+  83              		@ args = 0, pretend = 0, frame = 0
+  84              		@ frame_needed = 0, uses_anonymous_args = 0
+  85              		@ link register save eliminated.
+  62:Core/Src/zigbee_edc24.c ****     float float_data;
+  86              		.loc 1 62 5 view .LVU16
+  63:Core/Src/zigbee_edc24.c ****     float_data=*((float*)dat);
+  87              		.loc 1 63 5 view .LVU17
+  64:Core/Src/zigbee_edc24.c ****     return float_data;
+  88              		.loc 1 64 5 view .LVU18
+  65:Core/Src/zigbee_edc24.c **** }
+  89              		.loc 1 65 1 is_stmt 0 view .LVU19
+  90 0000 90ED000A 		vldr.32	s0, [r0]
+  91 0004 7047     		bx	lr
+  92              		.cfi_endproc
+  93              	.LFE133:
+  95              		.section	.text.HAL_UART_ErrorCallback,"ax",%progbits
+  96              		.align	1
+  97              		.global	HAL_UART_ErrorCallback
+  98              		.syntax unified
+  99              		.thumb
+ 100              		.thumb_func
+ 102              	HAL_UART_ErrorCallback:
+ 103              	.LVL7:
+ 104              	.LFB130:
+  27:Core/Src/zigbee_edc24.c ****   //HAL_UART_DeInit(huart);
+ 105              		.loc 1 27 1 is_stmt 1 view -0
+ 106              		.cfi_startproc
+ 107              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 4
+
+
+ 108              		@ frame_needed = 0, uses_anonymous_args = 0
+  27:Core/Src/zigbee_edc24.c ****   //HAL_UART_DeInit(huart);
+ 109              		.loc 1 27 1 is_stmt 0 view .LVU21
+ 110 0000 08B5     		push	{r3, lr}
+ 111              	.LCFI0:
+ 112              		.cfi_def_cfa_offset 8
+ 113              		.cfi_offset 3, -8
+ 114              		.cfi_offset 14, -4
+  29:Core/Src/zigbee_edc24.c ****   {
+ 115              		.loc 1 29 3 is_stmt 1 view .LVU22
+  29:Core/Src/zigbee_edc24.c ****   {
+ 116              		.loc 1 29 13 is_stmt 0 view .LVU23
+ 117 0002 084B     		ldr	r3, .L9
+ 118 0004 1B68     		ldr	r3, [r3]
+  29:Core/Src/zigbee_edc24.c ****   {
+ 119              		.loc 1 29 6 view .LVU24
+ 120 0006 8342     		cmp	r3, r0
+ 121 0008 00D0     		beq	.L8
+ 122              	.LVL8:
+ 123              	.L5:
+  35:Core/Src/zigbee_edc24.c **** 
+ 124              		.loc 1 35 1 view .LVU25
+ 125 000a 08BD     		pop	{r3, pc}
+ 126              	.LVL9:
+ 127              	.L8:
+  31:Core/Src/zigbee_edc24.c ****     receive_flag=0;
+ 128              		.loc 1 31 5 is_stmt 1 view .LVU26
+  31:Core/Src/zigbee_edc24.c ****     receive_flag=0;
+ 129              		.loc 1 31 5 view .LVU27
+ 130 000c 0022     		movs	r2, #0
+ 131 000e 83F83C20 		strb	r2, [r3, #60]
+  31:Core/Src/zigbee_edc24.c ****     receive_flag=0;
+ 132              		.loc 1 31 5 view .LVU28
+  32:Core/Src/zigbee_edc24.c ****     HAL_UARTEx_ReceiveToIdle_DMA(zigbee_huart,zigbeeMessage,MAX_MSG_LEN);
+ 133              		.loc 1 32 5 view .LVU29
+  32:Core/Src/zigbee_edc24.c ****     HAL_UARTEx_ReceiveToIdle_DMA(zigbee_huart,zigbeeMessage,MAX_MSG_LEN);
+ 134              		.loc 1 32 17 is_stmt 0 view .LVU30
+ 135 0012 0549     		ldr	r1, .L9+4
+ 136 0014 0A70     		strb	r2, [r1]
+  33:Core/Src/zigbee_edc24.c ****   }
+ 137              		.loc 1 33 5 is_stmt 1 view .LVU31
+ 138 0016 C822     		movs	r2, #200
+ 139 0018 0449     		ldr	r1, .L9+8
+ 140 001a 1846     		mov	r0, r3
+ 141              	.LVL10:
+  33:Core/Src/zigbee_edc24.c ****   }
+ 142              		.loc 1 33 5 is_stmt 0 view .LVU32
+ 143 001c FFF7FEFF 		bl	HAL_UARTEx_ReceiveToIdle_DMA
+ 144              	.LVL11:
+  35:Core/Src/zigbee_edc24.c **** 
+ 145              		.loc 1 35 1 view .LVU33
+ 146 0020 F3E7     		b	.L5
+ 147              	.L10:
+ 148 0022 00BF     		.align	2
+ 149              	.L9:
+ 150 0024 00000000 		.word	.LANCHOR0
+ 151 0028 00000000 		.word	.LANCHOR1
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 5
+
+
+ 152 002c 00000000 		.word	.LANCHOR2
+ 153              		.cfi_endproc
+ 154              	.LFE130:
+ 156              		.section	.text.HAL_UARTEx_RxEventCallback,"ax",%progbits
+ 157              		.align	1
+ 158              		.global	HAL_UARTEx_RxEventCallback
+ 159              		.syntax unified
+ 160              		.thumb
+ 161              		.thumb_func
+ 163              	HAL_UARTEx_RxEventCallback:
+ 164              	.LVL12:
+ 165              	.LFB131:
+  38:Core/Src/zigbee_edc24.c ****     if(huart == zigbee_huart)
+ 166              		.loc 1 38 1 is_stmt 1 view -0
+ 167              		.cfi_startproc
+ 168              		@ args = 0, pretend = 0, frame = 0
+ 169              		@ frame_needed = 0, uses_anonymous_args = 0
+ 170              		@ link register save eliminated.
+  39:Core/Src/zigbee_edc24.c ****     {
+ 171              		.loc 1 39 5 view .LVU35
+  39:Core/Src/zigbee_edc24.c ****     {
+ 172              		.loc 1 39 14 is_stmt 0 view .LVU36
+ 173 0000 044B     		ldr	r3, .L14
+ 174 0002 1B68     		ldr	r3, [r3]
+  39:Core/Src/zigbee_edc24.c ****     {
+ 175              		.loc 1 39 7 view .LVU37
+ 176 0004 8342     		cmp	r3, r0
+ 177 0006 00D0     		beq	.L13
+ 178              	.L11:
+  48:Core/Src/zigbee_edc24.c **** 
+ 179              		.loc 1 48 1 view .LVU38
+ 180 0008 7047     		bx	lr
+ 181              	.L13:
+  46:Core/Src/zigbee_edc24.c ****     }
+ 182              		.loc 1 46 9 is_stmt 1 view .LVU39
+  46:Core/Src/zigbee_edc24.c ****     }
+ 183              		.loc 1 46 21 is_stmt 0 view .LVU40
+ 184 000a 034B     		ldr	r3, .L14+4
+ 185 000c 0122     		movs	r2, #1
+ 186 000e 1A70     		strb	r2, [r3]
+  48:Core/Src/zigbee_edc24.c **** 
+ 187              		.loc 1 48 1 view .LVU41
+ 188 0010 FAE7     		b	.L11
+ 189              	.L15:
+ 190 0012 00BF     		.align	2
+ 191              	.L14:
+ 192 0014 00000000 		.word	.LANCHOR0
+ 193 0018 00000000 		.word	.LANCHOR1
+ 194              		.cfi_endproc
+ 195              	.LFE131:
+ 197              		.section	.text.zigbee_Init,"ax",%progbits
+ 198              		.align	1
+ 199              		.global	zigbee_Init
+ 200              		.syntax unified
+ 201              		.thumb
+ 202              		.thumb_func
+ 204              	zigbee_Init:
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 6
+
+
+ 205              	.LVL13:
+ 206              	.LFB134:
+  66:Core/Src/zigbee_edc24.c **** 
+  67:Core/Src/zigbee_edc24.c **** //接口函数
+  68:Core/Src/zigbee_edc24.c **** void zigbee_Init(UART_HandleTypeDef *huart)
+  69:Core/Src/zigbee_edc24.c **** {
+ 207              		.loc 1 69 1 is_stmt 1 view -0
+ 208              		.cfi_startproc
+ 209              		@ args = 0, pretend = 0, frame = 0
+ 210              		@ frame_needed = 0, uses_anonymous_args = 0
+ 211              		.loc 1 69 1 is_stmt 0 view .LVU43
+ 212 0000 70B5     		push	{r4, r5, r6, lr}
+ 213              	.LCFI1:
+ 214              		.cfi_def_cfa_offset 16
+ 215              		.cfi_offset 4, -16
+ 216              		.cfi_offset 5, -12
+ 217              		.cfi_offset 6, -8
+ 218              		.cfi_offset 14, -4
+ 219 0002 0446     		mov	r4, r0
+  70:Core/Src/zigbee_edc24.c ****     memset(zigbeeMessage,0x00,MAX_MSG_LEN);
+ 220              		.loc 1 70 5 is_stmt 1 view .LVU44
+ 221 0004 0D4D     		ldr	r5, .L18
+ 222 0006 C826     		movs	r6, #200
+ 223 0008 3246     		mov	r2, r6
+ 224 000a 0021     		movs	r1, #0
+ 225 000c 2846     		mov	r0, r5
+ 226              	.LVL14:
+ 227              		.loc 1 70 5 is_stmt 0 view .LVU45
+ 228 000e FFF7FEFF 		bl	memset
+ 229              	.LVL15:
+  71:Core/Src/zigbee_edc24.c ****     memset(gameInfoMessage,0x00,MAX_INFO_LEN);
+ 230              		.loc 1 71 5 is_stmt 1 view .LVU46
+ 231 0012 6422     		movs	r2, #100
+ 232 0014 0021     		movs	r1, #0
+ 233 0016 0A48     		ldr	r0, .L18+4
+ 234 0018 FFF7FEFF 		bl	memset
+ 235              	.LVL16:
+  72:Core/Src/zigbee_edc24.c ****     memset(gameStatusMessage,0x00,MAX_STATUS_LEN);
+ 236              		.loc 1 72 5 view .LVU47
+ 237 001c 9622     		movs	r2, #150
+ 238 001e 0021     		movs	r1, #0
+ 239 0020 0848     		ldr	r0, .L18+8
+ 240 0022 FFF7FEFF 		bl	memset
+ 241              	.LVL17:
+  73:Core/Src/zigbee_edc24.c ****     zigbee_huart = huart;
+ 242              		.loc 1 73 5 view .LVU48
+ 243              		.loc 1 73 18 is_stmt 0 view .LVU49
+ 244 0026 084B     		ldr	r3, .L18+12
+ 245 0028 1C60     		str	r4, [r3]
+  74:Core/Src/zigbee_edc24.c ****     receive_flag=0;
+ 246              		.loc 1 74 5 is_stmt 1 view .LVU50
+ 247              		.loc 1 74 17 is_stmt 0 view .LVU51
+ 248 002a 084B     		ldr	r3, .L18+16
+ 249 002c 0022     		movs	r2, #0
+ 250 002e 1A70     		strb	r2, [r3]
+  75:Core/Src/zigbee_edc24.c ****     HAL_UARTEx_ReceiveToIdle_DMA(zigbee_huart,zigbeeMessage,MAX_MSG_LEN);
+ 251              		.loc 1 75 5 is_stmt 1 view .LVU52
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 7
+
+
+ 252 0030 3246     		mov	r2, r6
+ 253 0032 2946     		mov	r1, r5
+ 254 0034 2046     		mov	r0, r4
+ 255 0036 FFF7FEFF 		bl	HAL_UARTEx_ReceiveToIdle_DMA
+ 256              	.LVL18:
+  76:Core/Src/zigbee_edc24.c **** }
+ 257              		.loc 1 76 1 is_stmt 0 view .LVU53
+ 258 003a 70BD     		pop	{r4, r5, r6, pc}
+ 259              	.LVL19:
+ 260              	.L19:
+ 261              		.loc 1 76 1 view .LVU54
+ 262              		.align	2
+ 263              	.L18:
+ 264 003c 00000000 		.word	.LANCHOR2
+ 265 0040 00000000 		.word	.LANCHOR3
+ 266 0044 00000000 		.word	.LANCHOR4
+ 267 0048 00000000 		.word	.LANCHOR0
+ 268 004c 00000000 		.word	.LANCHOR1
+ 269              		.cfi_endproc
+ 270              	.LFE134:
+ 272              		.section	.text.zigbeeMessageRecord,"ax",%progbits
+ 273              		.align	1
+ 274              		.global	zigbeeMessageRecord
+ 275              		.syntax unified
+ 276              		.thumb
+ 277              		.thumb_func
+ 279              	zigbeeMessageRecord:
+ 280              	.LFB135:
+  77:Core/Src/zigbee_edc24.c **** 
+  78:Core/Src/zigbee_edc24.c **** void zigbeeMessageRecord()
+  79:Core/Src/zigbee_edc24.c **** {
+ 281              		.loc 1 79 1 is_stmt 1 view -0
+ 282              		.cfi_startproc
+ 283              		@ args = 0, pretend = 0, frame = 0
+ 284              		@ frame_needed = 0, uses_anonymous_args = 0
+ 285 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 286              	.LCFI2:
+ 287              		.cfi_def_cfa_offset 24
+ 288              		.cfi_offset 4, -24
+ 289              		.cfi_offset 5, -20
+ 290              		.cfi_offset 6, -16
+ 291              		.cfi_offset 7, -12
+ 292              		.cfi_offset 8, -8
+ 293              		.cfi_offset 14, -4
+  80:Core/Src/zigbee_edc24.c ****     uint16_t msgIndex=0;
+ 294              		.loc 1 80 5 view .LVU56
+ 295              	.LVL20:
+  81:Core/Src/zigbee_edc24.c ****     for(msgIndex=0;msgIndex<MAX_MSG_LEN;msgIndex++)
+ 296              		.loc 1 81 5 view .LVU57
+ 297              		.loc 1 81 17 is_stmt 0 view .LVU58
+ 298 0004 0024     		movs	r4, #0
+ 299              		.loc 1 81 5 view .LVU59
+ 300 0006 11E0     		b	.L21
+ 301              	.LVL21:
+ 302              	.L31:
+ 303              	.LBB4:
+  82:Core/Src/zigbee_edc24.c ****     {
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 8
+
+
+  83:Core/Src/zigbee_edc24.c ****         if(zigbeeMessage[msgIndex]==0x55&&zigbeeMessage[msgIndex+1]==0xAA)
+  84:Core/Src/zigbee_edc24.c ****         {
+  85:Core/Src/zigbee_edc24.c ****             int16_t tmpnum;
+  86:Core/Src/zigbee_edc24.c ****             //tmpnum=(int32_t)(zigbeeMessage[msgIndex+1]+(zigbeeMessage[msgIndex+2]<<8)+(zigbeeMess
+  87:Core/Src/zigbee_edc24.c ****             tmpnum=*((int16_t*)(&zigbeeMessage[msgIndex+3]));
+  88:Core/Src/zigbee_edc24.c ****             if(tmpnum<0||(tmpnum>MAX_INFO_LEN&&tmpnum>MAX_STATUS_LEN)) continue;
+  89:Core/Src/zigbee_edc24.c ****             if(msgIndex+tmpnum+6>=MAX_MSG_LEN) break;
+  90:Core/Src/zigbee_edc24.c ****             uint8_t tmpchecksum;
+  91:Core/Src/zigbee_edc24.c ****             tmpchecksum=CalculateChecksum(&zigbeeMessage[msgIndex+6],tmpnum);
+  92:Core/Src/zigbee_edc24.c ****             if(tmpchecksum==zigbeeMessage[msgIndex+5])
+  93:Core/Src/zigbee_edc24.c ****             {
+  94:Core/Src/zigbee_edc24.c ****                 if(zigbeeMessage[msgIndex+2]==0x01)
+  95:Core/Src/zigbee_edc24.c ****                 {
+  96:Core/Src/zigbee_edc24.c ****                     //u1_printf("0x01\n");
+  97:Core/Src/zigbee_edc24.c ****                     memset(gameInfoMessage,0x00,MAX_INFO_LEN);
+ 304              		.loc 1 97 21 is_stmt 1 view .LVU60
+ 305 0008 6422     		movs	r2, #100
+ 306 000a 0021     		movs	r1, #0
+ 307 000c 2C48     		ldr	r0, .L32
+ 308              	.LVL22:
+ 309              		.loc 1 97 21 is_stmt 0 view .LVU61
+ 310 000e FFF7FEFF 		bl	memset
+ 311              	.LVL23:
+  98:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 312              		.loc 1 98 21 is_stmt 1 view .LVU62
+ 313              	.LBB5:
+ 314              		.loc 1 98 25 view .LVU63
+ 315              		.loc 1 98 33 is_stmt 0 view .LVU64
+ 316 0012 0023     		movs	r3, #0
+ 317              		.loc 1 98 21 view .LVU65
+ 318 0014 06E0     		b	.L25
+ 319              	.LVL24:
+ 320              	.L26:
+  99:Core/Src/zigbee_edc24.c ****                     {
+ 100:Core/Src/zigbee_edc24.c ****                         gameInfoMessage[i]=zigbeeMessage[msgIndex+6+i];
+ 321              		.loc 1 100 25 is_stmt 1 discriminator 3 view .LVU66
+ 322              		.loc 1 100 68 is_stmt 0 discriminator 3 view .LVU67
+ 323 0016 08EB0302 		add	r2, r8, r3
+ 324              		.loc 1 100 57 discriminator 3 view .LVU68
+ 325 001a 2A49     		ldr	r1, .L32+4
+ 326 001c 895C     		ldrb	r1, [r1, r2]	@ zero_extendqisi2
+ 327              		.loc 1 100 43 discriminator 3 view .LVU69
+ 328 001e 284A     		ldr	r2, .L32
+ 329 0020 D154     		strb	r1, [r2, r3]
+  98:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 330              		.loc 1 98 47 is_stmt 1 discriminator 3 view .LVU70
+ 331 0022 0133     		adds	r3, r3, #1
+ 332              	.LVL25:
+ 333              	.L25:
+  98:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 334              		.loc 1 98 38 discriminator 1 view .LVU71
+ 335 0024 9E42     		cmp	r6, r3
+ 336 0026 F6DC     		bgt	.L26
+ 337              	.LVL26:
+ 338              	.L22:
+  98:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 339              		.loc 1 98 38 is_stmt 0 discriminator 1 view .LVU72
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 9
+
+
+ 340              	.LBE5:
+ 341              	.LBE4:
+  81:Core/Src/zigbee_edc24.c ****     {
+ 342              		.loc 1 81 49 is_stmt 1 discriminator 2 view .LVU73
+ 343 0028 0134     		adds	r4, r4, #1
+ 344              	.LVL27:
+  81:Core/Src/zigbee_edc24.c ****     {
+ 345              		.loc 1 81 49 is_stmt 0 discriminator 2 view .LVU74
+ 346 002a A4B2     		uxth	r4, r4
+ 347              	.LVL28:
+ 348              	.L21:
+  81:Core/Src/zigbee_edc24.c ****     {
+ 349              		.loc 1 81 28 is_stmt 1 discriminator 1 view .LVU75
+ 350 002c C72C     		cmp	r4, #199
+ 351 002e 34D8     		bhi	.L23
+  83:Core/Src/zigbee_edc24.c ****         {
+ 352              		.loc 1 83 9 view .LVU76
+  83:Core/Src/zigbee_edc24.c ****         {
+ 353              		.loc 1 83 25 is_stmt 0 view .LVU77
+ 354 0030 2546     		mov	r5, r4
+ 355 0032 244B     		ldr	r3, .L32+4
+ 356 0034 1B5D     		ldrb	r3, [r3, r4]	@ zero_extendqisi2
+  83:Core/Src/zigbee_edc24.c ****         {
+ 357              		.loc 1 83 11 view .LVU78
+ 358 0036 552B     		cmp	r3, #85
+ 359 0038 F6D1     		bne	.L22
+  83:Core/Src/zigbee_edc24.c ****         {
+ 360              		.loc 1 83 65 discriminator 1 view .LVU79
+ 361 003a 631C     		adds	r3, r4, #1
+  83:Core/Src/zigbee_edc24.c ****         {
+ 362              		.loc 1 83 56 discriminator 1 view .LVU80
+ 363 003c 214A     		ldr	r2, .L32+4
+ 364 003e D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+  83:Core/Src/zigbee_edc24.c ****         {
+ 365              		.loc 1 83 41 discriminator 1 view .LVU81
+ 366 0040 AA2B     		cmp	r3, #170
+ 367 0042 F1D1     		bne	.L22
+ 368              	.LBB7:
+  85:Core/Src/zigbee_edc24.c ****             //tmpnum=(int32_t)(zigbeeMessage[msgIndex+1]+(zigbeeMessage[msgIndex+2]<<8)+(zigbeeMess
+ 369              		.loc 1 85 13 is_stmt 1 view .LVU82
+  87:Core/Src/zigbee_edc24.c ****             if(tmpnum<0||(tmpnum>MAX_INFO_LEN&&tmpnum>MAX_STATUS_LEN)) continue;
+ 370              		.loc 1 87 13 view .LVU83
+  87:Core/Src/zigbee_edc24.c ****             if(tmpnum<0||(tmpnum>MAX_INFO_LEN&&tmpnum>MAX_STATUS_LEN)) continue;
+ 371              		.loc 1 87 56 is_stmt 0 view .LVU84
+ 372 0044 E31C     		adds	r3, r4, #3
+  87:Core/Src/zigbee_edc24.c ****             if(tmpnum<0||(tmpnum>MAX_INFO_LEN&&tmpnum>MAX_STATUS_LEN)) continue;
+ 373              		.loc 1 87 19 view .LVU85
+ 374 0046 D65E     		ldrsh	r6, [r2, r3]
+ 375              	.LVL29:
+  88:Core/Src/zigbee_edc24.c ****             if(msgIndex+tmpnum+6>=MAX_MSG_LEN) break;
+ 376              		.loc 1 88 13 is_stmt 1 view .LVU86
+  88:Core/Src/zigbee_edc24.c ****             if(msgIndex+tmpnum+6>=MAX_MSG_LEN) break;
+ 377              		.loc 1 88 24 is_stmt 0 view .LVU87
+ 378 0048 B3B2     		uxth	r3, r6
+  88:Core/Src/zigbee_edc24.c ****             if(msgIndex+tmpnum+6>=MAX_MSG_LEN) break;
+ 379              		.loc 1 88 15 view .LVU88
+ 380 004a 962B     		cmp	r3, #150
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 10
+
+
+ 381 004c ECD8     		bhi	.L22
+  89:Core/Src/zigbee_edc24.c ****             uint8_t tmpchecksum;
+ 382              		.loc 1 89 13 is_stmt 1 view .LVU89
+  89:Core/Src/zigbee_edc24.c ****             uint8_t tmpchecksum;
+ 383              		.loc 1 89 24 is_stmt 0 view .LVU90
+ 384 004e A319     		adds	r3, r4, r6
+  89:Core/Src/zigbee_edc24.c ****             uint8_t tmpchecksum;
+ 385              		.loc 1 89 15 view .LVU91
+ 386 0050 C12B     		cmp	r3, #193
+ 387 0052 22DC     		bgt	.L23
+  90:Core/Src/zigbee_edc24.c ****             tmpchecksum=CalculateChecksum(&zigbeeMessage[msgIndex+6],tmpnum);
+ 388              		.loc 1 90 13 is_stmt 1 view .LVU92
+  91:Core/Src/zigbee_edc24.c ****             if(tmpchecksum==zigbeeMessage[msgIndex+5])
+ 389              		.loc 1 91 13 view .LVU93
+  91:Core/Src/zigbee_edc24.c ****             if(tmpchecksum==zigbeeMessage[msgIndex+5])
+ 390              		.loc 1 91 66 is_stmt 0 view .LVU94
+ 391 0054 04F10608 		add	r8, r4, #6
+  91:Core/Src/zigbee_edc24.c ****             if(tmpchecksum==zigbeeMessage[msgIndex+5])
+ 392              		.loc 1 91 43 view .LVU95
+ 393 0058 1746     		mov	r7, r2
+  91:Core/Src/zigbee_edc24.c ****             if(tmpchecksum==zigbeeMessage[msgIndex+5])
+ 394              		.loc 1 91 25 view .LVU96
+ 395 005a 3146     		mov	r1, r6
+ 396 005c 02EB0800 		add	r0, r2, r8
+ 397 0060 FFF7FEFF 		bl	CalculateChecksum
+ 398              	.LVL30:
+  92:Core/Src/zigbee_edc24.c ****             {
+ 399              		.loc 1 92 13 is_stmt 1 view .LVU97
+  92:Core/Src/zigbee_edc24.c ****             {
+ 400              		.loc 1 92 51 is_stmt 0 view .LVU98
+ 401 0064 631D     		adds	r3, r4, #5
+  92:Core/Src/zigbee_edc24.c ****             {
+ 402              		.loc 1 92 42 view .LVU99
+ 403 0066 FB5C     		ldrb	r3, [r7, r3]	@ zero_extendqisi2
+  92:Core/Src/zigbee_edc24.c ****             {
+ 404              		.loc 1 92 15 view .LVU100
+ 405 0068 8342     		cmp	r3, r0
+ 406 006a DDD1     		bne	.L22
+  94:Core/Src/zigbee_edc24.c ****                 {
+ 407              		.loc 1 94 17 is_stmt 1 view .LVU101
+  94:Core/Src/zigbee_edc24.c ****                 {
+ 408              		.loc 1 94 42 is_stmt 0 view .LVU102
+ 409 006c 0235     		adds	r5, r5, #2
+  94:Core/Src/zigbee_edc24.c ****                 {
+ 410              		.loc 1 94 33 view .LVU103
+ 411 006e 7B5D     		ldrb	r3, [r7, r5]	@ zero_extendqisi2
+  94:Core/Src/zigbee_edc24.c ****                 {
+ 412              		.loc 1 94 19 view .LVU104
+ 413 0070 012B     		cmp	r3, #1
+ 414 0072 C9D0     		beq	.L31
+ 101:Core/Src/zigbee_edc24.c ****                         //u1_printf("%2x ",gameInfoMessage[i]);
+ 102:Core/Src/zigbee_edc24.c ****                     }
+ 103:Core/Src/zigbee_edc24.c ****                     //u1_printf("\n");
+ 104:Core/Src/zigbee_edc24.c ****                     continue;
+ 105:Core/Src/zigbee_edc24.c ****                 }
+ 106:Core/Src/zigbee_edc24.c ****                 else if(zigbeeMessage[msgIndex+2]==0x05)
+ 415              		.loc 1 106 22 is_stmt 1 view .LVU105
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 11
+
+
+ 416              		.loc 1 106 24 is_stmt 0 view .LVU106
+ 417 0074 052B     		cmp	r3, #5
+ 418 0076 D7D1     		bne	.L22
+ 107:Core/Src/zigbee_edc24.c ****                 {
+ 108:Core/Src/zigbee_edc24.c ****                     //u1_printf("0x05\n");
+ 109:Core/Src/zigbee_edc24.c ****                     memset(gameStatusMessage,0x00,MAX_STATUS_LEN);
+ 419              		.loc 1 109 21 is_stmt 1 view .LVU107
+ 420 0078 9622     		movs	r2, #150
+ 421 007a 0021     		movs	r1, #0
+ 422 007c 1248     		ldr	r0, .L32+8
+ 423              	.LVL31:
+ 424              		.loc 1 109 21 is_stmt 0 view .LVU108
+ 425 007e FFF7FEFF 		bl	memset
+ 426              	.LVL32:
+ 110:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 427              		.loc 1 110 21 is_stmt 1 view .LVU109
+ 428              	.LBB6:
+ 429              		.loc 1 110 25 view .LVU110
+ 430              		.loc 1 110 33 is_stmt 0 view .LVU111
+ 431 0082 0023     		movs	r3, #0
+ 432              		.loc 1 110 21 view .LVU112
+ 433 0084 06E0     		b	.L27
+ 434              	.LVL33:
+ 435              	.L28:
+ 111:Core/Src/zigbee_edc24.c ****                     {
+ 112:Core/Src/zigbee_edc24.c ****                         gameStatusMessage[i]=zigbeeMessage[msgIndex+6+i];
+ 436              		.loc 1 112 25 is_stmt 1 discriminator 3 view .LVU113
+ 437              		.loc 1 112 70 is_stmt 0 discriminator 3 view .LVU114
+ 438 0086 08EB0302 		add	r2, r8, r3
+ 439              		.loc 1 112 59 discriminator 3 view .LVU115
+ 440 008a 0E49     		ldr	r1, .L32+4
+ 441 008c 895C     		ldrb	r1, [r1, r2]	@ zero_extendqisi2
+ 442              		.loc 1 112 45 discriminator 3 view .LVU116
+ 443 008e 0E4A     		ldr	r2, .L32+8
+ 444 0090 D154     		strb	r1, [r2, r3]
+ 110:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 445              		.loc 1 110 47 is_stmt 1 discriminator 3 view .LVU117
+ 446 0092 0133     		adds	r3, r3, #1
+ 447              	.LVL34:
+ 448              	.L27:
+ 110:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 449              		.loc 1 110 38 discriminator 1 view .LVU118
+ 450 0094 9E42     		cmp	r6, r3
+ 451 0096 F6DC     		bgt	.L28
+ 452 0098 C6E7     		b	.L22
+ 453              	.LVL35:
+ 454              	.L23:
+ 110:Core/Src/zigbee_edc24.c ****                     for(int32_t i=0;i<tmpnum;i++)
+ 455              		.loc 1 110 38 is_stmt 0 discriminator 1 view .LVU119
+ 456              	.LBE6:
+ 457              	.LBE7:
+ 113:Core/Src/zigbee_edc24.c ****                         //u1_printf("%2x ",gameStatusMessage[i]);
+ 114:Core/Src/zigbee_edc24.c ****                     }
+ 115:Core/Src/zigbee_edc24.c ****                     //u1_printf("\n");
+ 116:Core/Src/zigbee_edc24.c ****                     continue;
+ 117:Core/Src/zigbee_edc24.c ****                 }
+ 118:Core/Src/zigbee_edc24.c ****             }
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 12
+
+
+ 119:Core/Src/zigbee_edc24.c ****         }
+ 120:Core/Src/zigbee_edc24.c ****     }
+ 121:Core/Src/zigbee_edc24.c ****     memset(zigbeeMessage,0x00,MAX_MSG_LEN);
+ 458              		.loc 1 121 5 is_stmt 1 view .LVU120
+ 459 009a 0A4C     		ldr	r4, .L32+4
+ 460              	.LVL36:
+ 461              		.loc 1 121 5 is_stmt 0 view .LVU121
+ 462 009c C825     		movs	r5, #200
+ 463 009e 2A46     		mov	r2, r5
+ 464 00a0 0021     		movs	r1, #0
+ 465 00a2 2046     		mov	r0, r4
+ 466 00a4 FFF7FEFF 		bl	memset
+ 467              	.LVL37:
+ 122:Core/Src/zigbee_edc24.c ****     receive_flag=0;
+ 468              		.loc 1 122 5 is_stmt 1 view .LVU122
+ 469              		.loc 1 122 17 is_stmt 0 view .LVU123
+ 470 00a8 084B     		ldr	r3, .L32+12
+ 471 00aa 0022     		movs	r2, #0
+ 472 00ac 1A70     		strb	r2, [r3]
+ 123:Core/Src/zigbee_edc24.c ****     HAL_UARTEx_ReceiveToIdle_DMA(zigbee_huart,zigbeeMessage,MAX_MSG_LEN);
+ 473              		.loc 1 123 5 is_stmt 1 view .LVU124
+ 474 00ae 2A46     		mov	r2, r5
+ 475 00b0 2146     		mov	r1, r4
+ 476 00b2 074B     		ldr	r3, .L32+16
+ 477 00b4 1868     		ldr	r0, [r3]
+ 478 00b6 FFF7FEFF 		bl	HAL_UARTEx_ReceiveToIdle_DMA
+ 479              	.LVL38:
+ 124:Core/Src/zigbee_edc24.c **** }
+ 480              		.loc 1 124 1 is_stmt 0 view .LVU125
+ 481 00ba BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 482              	.L33:
+ 483 00be 00BF     		.align	2
+ 484              	.L32:
+ 485 00c0 00000000 		.word	.LANCHOR3
+ 486 00c4 00000000 		.word	.LANCHOR2
+ 487 00c8 00000000 		.word	.LANCHOR4
+ 488 00cc 00000000 		.word	.LANCHOR1
+ 489 00d0 00000000 		.word	.LANCHOR0
+ 490              		.cfi_endproc
+ 491              	.LFE135:
+ 493              		.section	.text.getGameTime,"ax",%progbits
+ 494              		.align	1
+ 495              		.global	getGameTime
+ 496              		.syntax unified
+ 497              		.thumb
+ 498              		.thumb_func
+ 500              	getGameTime:
+ 501              	.LFB136:
+ 125:Core/Src/zigbee_edc24.c **** 
+ 126:Core/Src/zigbee_edc24.c **** int32_t getGameTime()
+ 127:Core/Src/zigbee_edc24.c **** {
+ 502              		.loc 1 127 1 is_stmt 1 view -0
+ 503              		.cfi_startproc
+ 504              		@ args = 0, pretend = 0, frame = 0
+ 505              		@ frame_needed = 0, uses_anonymous_args = 0
+ 506              		@ link register save eliminated.
+ 128:Core/Src/zigbee_edc24.c ****     int32_t time;
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 13
+
+
+ 507              		.loc 1 128 5 view .LVU127
+ 129:Core/Src/zigbee_edc24.c ****     //time=(int32_t)(gameStatusMessage[1]+(gameStatusMessage[2]<<8)+(gameStatusMessage[3]<<16)+(gam
+ 130:Core/Src/zigbee_edc24.c ****     time=*((int32_t*)(&gameStatusMessage[1]));
+ 508              		.loc 1 130 5 view .LVU128
+ 509              	.LVL39:
+ 131:Core/Src/zigbee_edc24.c ****     return time;
+ 510              		.loc 1 131 5 view .LVU129
+ 132:Core/Src/zigbee_edc24.c **** }
+ 511              		.loc 1 132 1 is_stmt 0 view .LVU130
+ 512 0000 014B     		ldr	r3, .L35
+ 513 0002 D3F80100 		ldr	r0, [r3, #1]	@ unaligned
+ 514 0006 7047     		bx	lr
+ 515              	.L36:
+ 516              		.align	2
+ 517              	.L35:
+ 518 0008 00000000 		.word	.LANCHOR4
+ 519              		.cfi_endproc
+ 520              	.LFE136:
+ 522              		.section	.text.getGameStatus,"ax",%progbits
+ 523              		.align	1
+ 524              		.global	getGameStatus
+ 525              		.syntax unified
+ 526              		.thumb
+ 527              		.thumb_func
+ 529              	getGameStatus:
+ 530              	.LFB137:
+ 133:Core/Src/zigbee_edc24.c **** 
+ 134:Core/Src/zigbee_edc24.c **** GameStatus_edc24 getGameStatus()
+ 135:Core/Src/zigbee_edc24.c **** {
+ 531              		.loc 1 135 1 is_stmt 1 view -0
+ 532              		.cfi_startproc
+ 533              		@ args = 0, pretend = 0, frame = 0
+ 534              		@ frame_needed = 0, uses_anonymous_args = 0
+ 535              		@ link register save eliminated.
+ 136:Core/Src/zigbee_edc24.c ****     uint8_t status;
+ 536              		.loc 1 136 5 view .LVU132
+ 137:Core/Src/zigbee_edc24.c ****     status=gameStatusMessage[0];
+ 537              		.loc 1 137 5 view .LVU133
+ 538              		.loc 1 137 11 is_stmt 0 view .LVU134
+ 539 0000 034B     		ldr	r3, .L40
+ 540 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 541              	.LVL40:
+ 138:Core/Src/zigbee_edc24.c ****     if(status==0x00)
+ 542              		.loc 1 138 5 is_stmt 1 view .LVU135
+ 543              		.loc 1 138 7 is_stmt 0 view .LVU136
+ 544 0004 0BB9     		cbnz	r3, .L39
+ 139:Core/Src/zigbee_edc24.c ****     {
+ 140:Core/Src/zigbee_edc24.c ****         return GameStandby;
+ 545              		.loc 1 140 16 view .LVU137
+ 546 0006 0120     		movs	r0, #1
+ 547 0008 7047     		bx	lr
+ 548              	.L39:
+ 141:Core/Src/zigbee_edc24.c ****     }
+ 142:Core/Src/zigbee_edc24.c ****     else
+ 143:Core/Src/zigbee_edc24.c ****     {
+ 144:Core/Src/zigbee_edc24.c ****         return GameGoing;
+ 549              		.loc 1 144 16 view .LVU138
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 14
+
+
+ 550 000a 0020     		movs	r0, #0
+ 145:Core/Src/zigbee_edc24.c ****     }
+ 146:Core/Src/zigbee_edc24.c **** }
+ 551              		.loc 1 146 1 view .LVU139
+ 552 000c 7047     		bx	lr
+ 553              	.L41:
+ 554 000e 00BF     		.align	2
+ 555              	.L40:
+ 556 0010 00000000 		.word	.LANCHOR4
+ 557              		.cfi_endproc
+ 558              	.LFE137:
+ 560              		.section	.text.getScore,"ax",%progbits
+ 561              		.align	1
+ 562              		.global	getScore
+ 563              		.syntax unified
+ 564              		.thumb
+ 565              		.thumb_func
+ 567              	getScore:
+ 568              	.LFB138:
+ 147:Core/Src/zigbee_edc24.c **** 
+ 148:Core/Src/zigbee_edc24.c **** float getScore()
+ 149:Core/Src/zigbee_edc24.c **** {
+ 569              		.loc 1 149 1 is_stmt 1 view -0
+ 570              		.cfi_startproc
+ 571              		@ args = 0, pretend = 0, frame = 0
+ 572              		@ frame_needed = 0, uses_anonymous_args = 0
+ 573 0000 08B5     		push	{r3, lr}
+ 574              	.LCFI3:
+ 575              		.cfi_def_cfa_offset 8
+ 576              		.cfi_offset 3, -8
+ 577              		.cfi_offset 14, -4
+ 150:Core/Src/zigbee_edc24.c ****     return change_float_data(&gameStatusMessage[5]);
+ 578              		.loc 1 150 5 view .LVU141
+ 579              		.loc 1 150 12 is_stmt 0 view .LVU142
+ 580 0002 0248     		ldr	r0, .L44
+ 581 0004 FFF7FEFF 		bl	change_float_data
+ 582              	.LVL41:
+ 151:Core/Src/zigbee_edc24.c **** }
+ 583              		.loc 1 151 1 view .LVU143
+ 584 0008 08BD     		pop	{r3, pc}
+ 585              	.L45:
+ 586 000a 00BF     		.align	2
+ 587              	.L44:
+ 588 000c 05000000 		.word	.LANCHOR4+5
+ 589              		.cfi_endproc
+ 590              	.LFE138:
+ 592              		.section	.text.getVehiclePos,"ax",%progbits
+ 593              		.align	1
+ 594              		.global	getVehiclePos
+ 595              		.syntax unified
+ 596              		.thumb
+ 597              		.thumb_func
+ 599              	getVehiclePos:
+ 600              	.LFB139:
+ 152:Core/Src/zigbee_edc24.c **** 
+ 153:Core/Src/zigbee_edc24.c **** Position_edc24 getVehiclePos()
+ 154:Core/Src/zigbee_edc24.c **** {
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 15
+
+
+ 601              		.loc 1 154 1 is_stmt 1 view -0
+ 602              		.cfi_startproc
+ 603              		@ args = 0, pretend = 0, frame = 8
+ 604              		@ frame_needed = 0, uses_anonymous_args = 0
+ 605              		@ link register save eliminated.
+ 606 0000 82B0     		sub	sp, sp, #8
+ 607              	.LCFI4:
+ 608              		.cfi_def_cfa_offset 8
+ 155:Core/Src/zigbee_edc24.c ****     Position_edc24 pos;
+ 609              		.loc 1 155 5 view .LVU145
+ 156:Core/Src/zigbee_edc24.c ****     //pos.x=(int32_t)(gameStatusMessage[9]+(gameStatusMessage[10]<<8)+(gameStatusMessage[11]<<16)+(
+ 157:Core/Src/zigbee_edc24.c ****     //pos.y=(int32_t)(gameStatusMessage[13]+(gameStatusMessage[14]<<8)+(gameStatusMessage[15]<<16)+
+ 158:Core/Src/zigbee_edc24.c ****     pos.x=*((int16_t*)(&gameStatusMessage[9]));
+ 610              		.loc 1 158 5 view .LVU146
+ 611              		.loc 1 158 11 is_stmt 0 view .LVU147
+ 612 0002 0B4B     		ldr	r3, .L48
+ 613 0004 B3F90920 		ldrsh	r2, [r3, #9]	@ unaligned
+ 614              		.loc 1 158 10 view .LVU148
+ 615 0008 ADF80020 		strh	r2, [sp]	@ movhi
+ 159:Core/Src/zigbee_edc24.c ****     pos.y=*((int16_t*)(&gameStatusMessage[11]));
+ 616              		.loc 1 159 5 is_stmt 1 view .LVU149
+ 617              		.loc 1 159 11 is_stmt 0 view .LVU150
+ 618 000c B3F90B30 		ldrsh	r3, [r3, #11]	@ unaligned
+ 619              		.loc 1 159 10 view .LVU151
+ 620 0010 ADF80230 		strh	r3, [sp, #2]	@ movhi
+ 160:Core/Src/zigbee_edc24.c ****     return pos;
+ 621              		.loc 1 160 5 is_stmt 1 view .LVU152
+ 622              		.loc 1 160 12 is_stmt 0 view .LVU153
+ 623 0014 009B     		ldr	r3, [sp]
+ 624 0016 0193     		str	r3, [sp, #4]
+ 625 0018 0020     		movs	r0, #0
+ 626 001a BDF80430 		ldrh	r3, [sp, #4]
+ 627 001e 63F30F00 		bfi	r0, r3, #0, #16
+ 628 0022 BDF80630 		ldrh	r3, [sp, #6]
+ 629 0026 63F31F40 		bfi	r0, r3, #16, #16
+ 161:Core/Src/zigbee_edc24.c **** }
+ 630              		.loc 1 161 1 view .LVU154
+ 631 002a 02B0     		add	sp, sp, #8
+ 632              	.LCFI5:
+ 633              		.cfi_def_cfa_offset 0
+ 634              		@ sp needed
+ 635 002c 7047     		bx	lr
+ 636              	.L49:
+ 637 002e 00BF     		.align	2
+ 638              	.L48:
+ 639 0030 00000000 		.word	.LANCHOR4
+ 640              		.cfi_endproc
+ 641              	.LFE139:
+ 643              		.section	.text.getRemainDist,"ax",%progbits
+ 644              		.align	1
+ 645              		.global	getRemainDist
+ 646              		.syntax unified
+ 647              		.thumb
+ 648              		.thumb_func
+ 650              	getRemainDist:
+ 651              	.LFB140:
+ 162:Core/Src/zigbee_edc24.c **** 
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 16
+
+
+ 163:Core/Src/zigbee_edc24.c **** int32_t getRemainDist()
+ 164:Core/Src/zigbee_edc24.c **** {
+ 652              		.loc 1 164 1 is_stmt 1 view -0
+ 653              		.cfi_startproc
+ 654              		@ args = 0, pretend = 0, frame = 0
+ 655              		@ frame_needed = 0, uses_anonymous_args = 0
+ 656              		@ link register save eliminated.
+ 165:Core/Src/zigbee_edc24.c ****     int32_t dist;
+ 657              		.loc 1 165 5 view .LVU156
+ 166:Core/Src/zigbee_edc24.c ****     //dist=(int32_t)(gameStatusMessage[17]+(gameStatusMessage[18]<<8)+(gameStatusMessage[19]<<16)+(
+ 167:Core/Src/zigbee_edc24.c ****     dist=*((int32_t*)(&gameStatusMessage[13]));
+ 658              		.loc 1 167 5 view .LVU157
+ 659              	.LVL42:
+ 168:Core/Src/zigbee_edc24.c ****     return dist;
+ 660              		.loc 1 168 5 view .LVU158
+ 169:Core/Src/zigbee_edc24.c **** }
+ 661              		.loc 1 169 1 is_stmt 0 view .LVU159
+ 662 0000 014B     		ldr	r3, .L51
+ 663 0002 D3F80D00 		ldr	r0, [r3, #13]	@ unaligned
+ 664 0006 7047     		bx	lr
+ 665              	.L52:
+ 666              		.align	2
+ 667              	.L51:
+ 668 0008 00000000 		.word	.LANCHOR4
+ 669              		.cfi_endproc
+ 670              	.LFE140:
+ 672              		.section	.text.getOrderNum,"ax",%progbits
+ 673              		.align	1
+ 674              		.global	getOrderNum
+ 675              		.syntax unified
+ 676              		.thumb
+ 677              		.thumb_func
+ 679              	getOrderNum:
+ 680              	.LFB141:
+ 170:Core/Src/zigbee_edc24.c **** 
+ 171:Core/Src/zigbee_edc24.c **** uint8_t getOrderNum()
+ 172:Core/Src/zigbee_edc24.c **** {
+ 681              		.loc 1 172 1 is_stmt 1 view -0
+ 682              		.cfi_startproc
+ 683              		@ args = 0, pretend = 0, frame = 0
+ 684              		@ frame_needed = 0, uses_anonymous_args = 0
+ 685              		@ link register save eliminated.
+ 173:Core/Src/zigbee_edc24.c ****     return gameStatusMessage[17];
+ 686              		.loc 1 173 5 view .LVU161
+ 174:Core/Src/zigbee_edc24.c **** }
+ 687              		.loc 1 174 1 is_stmt 0 view .LVU162
+ 688 0000 014B     		ldr	r3, .L54
+ 689 0002 587C     		ldrb	r0, [r3, #17]	@ zero_extendqisi2
+ 690 0004 7047     		bx	lr
+ 691              	.L55:
+ 692 0006 00BF     		.align	2
+ 693              	.L54:
+ 694 0008 00000000 		.word	.LANCHOR4
+ 695              		.cfi_endproc
+ 696              	.LFE141:
+ 698              		.section	.text.getOneOrder,"ax",%progbits
+ 699              		.align	1
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 17
+
+
+ 700              		.global	getOneOrder
+ 701              		.syntax unified
+ 702              		.thumb
+ 703              		.thumb_func
+ 705              	getOneOrder:
+ 706              	.LVL43:
+ 707              	.LFB142:
+ 175:Core/Src/zigbee_edc24.c **** 
+ 176:Core/Src/zigbee_edc24.c **** Order_edc24 getOneOrder(uint8_t orderNo)
+ 177:Core/Src/zigbee_edc24.c **** {
+ 708              		.loc 1 177 1 is_stmt 1 view -0
+ 709              		.cfi_startproc
+ 710              		@ args = 0, pretend = 0, frame = 0
+ 711              		@ frame_needed = 0, uses_anonymous_args = 0
+ 712              		.loc 1 177 1 is_stmt 0 view .LVU164
+ 713 0000 70B5     		push	{r4, r5, r6, lr}
+ 714              	.LCFI6:
+ 715              		.cfi_def_cfa_offset 16
+ 716              		.cfi_offset 4, -16
+ 717              		.cfi_offset 5, -12
+ 718              		.cfi_offset 6, -8
+ 719              		.cfi_offset 14, -4
+ 720 0002 0546     		mov	r5, r0
+ 178:Core/Src/zigbee_edc24.c ****     Order_edc24 order;
+ 721              		.loc 1 178 5 is_stmt 1 view .LVU165
+ 179:Core/Src/zigbee_edc24.c ****     //order.depPos.x=(int32_t)(gameStatusMessage[22+28*orderNo]+(gameStatusMessage[23+28*orderNo]<<
+ 180:Core/Src/zigbee_edc24.c ****     //order.depPos.y=(int32_t)(gameStatusMessage[26+28*orderNo]+(gameStatusMessage[27+28*orderNo]<<
+ 181:Core/Src/zigbee_edc24.c ****     //order.desPos.x=(int32_t)(gameStatusMessage[30+28*orderNo]+(gameStatusMessage[31+28*orderNo]<<
+ 182:Core/Src/zigbee_edc24.c ****     //order.desPos.y=(int32_t)(gameStatusMessage[34+28*orderNo]+(gameStatusMessage[35+28*orderNo]<<
+ 183:Core/Src/zigbee_edc24.c ****     order.depPos.x=*((int16_t*)(&gameStatusMessage[18+18*orderNo]));
+ 722              		.loc 1 183 5 view .LVU166
+ 723              		.loc 1 183 54 is_stmt 0 view .LVU167
+ 724 0004 4B1C     		adds	r3, r1, #1
+ 725 0006 03EBC303 		add	r3, r3, r3, lsl #3
+ 726              		.loc 1 183 33 view .LVU168
+ 727 000a 114E     		ldr	r6, .L58
+ 728              		.loc 1 183 20 view .LVU169
+ 729 000c 36F91330 		ldrsh	r3, [r6, r3, lsl #1]
+ 730              		.loc 1 183 19 view .LVU170
+ 731 0010 0380     		strh	r3, [r0]	@ movhi
+ 184:Core/Src/zigbee_edc24.c ****     order.depPos.y=*((int16_t*)(&gameStatusMessage[20+18*orderNo]));
+ 732              		.loc 1 184 5 is_stmt 1 view .LVU171
+ 733              		.loc 1 184 57 is_stmt 0 view .LVU172
+ 734 0012 01EBC101 		add	r1, r1, r1, lsl #3
+ 735              	.LVL44:
+ 736              		.loc 1 184 57 view .LVU173
+ 737 0016 4C00     		lsls	r4, r1, #1
+ 738              		.loc 1 184 54 view .LVU174
+ 739 0018 04F11403 		add	r3, r4, #20
+ 740              		.loc 1 184 20 view .LVU175
+ 741 001c F35E     		ldrsh	r3, [r6, r3]
+ 742              		.loc 1 184 19 view .LVU176
+ 743 001e 4380     		strh	r3, [r0, #2]	@ movhi
+ 185:Core/Src/zigbee_edc24.c ****     order.desPos.x=*((int16_t*)(&gameStatusMessage[22+18*orderNo]));
+ 744              		.loc 1 185 5 is_stmt 1 view .LVU177
+ 745              		.loc 1 185 54 is_stmt 0 view .LVU178
+ 746 0020 04F11603 		add	r3, r4, #22
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 18
+
+
+ 747              		.loc 1 185 20 view .LVU179
+ 748 0024 F35E     		ldrsh	r3, [r6, r3]
+ 749              		.loc 1 185 19 view .LVU180
+ 750 0026 8380     		strh	r3, [r0, #4]	@ movhi
+ 186:Core/Src/zigbee_edc24.c ****     order.desPos.y=*((int16_t*)(&gameStatusMessage[24+18*orderNo]));
+ 751              		.loc 1 186 5 is_stmt 1 view .LVU181
+ 752              		.loc 1 186 54 is_stmt 0 view .LVU182
+ 753 0028 04F11803 		add	r3, r4, #24
+ 754              		.loc 1 186 20 view .LVU183
+ 755 002c F35E     		ldrsh	r3, [r6, r3]
+ 756              		.loc 1 186 19 view .LVU184
+ 757 002e C380     		strh	r3, [r0, #6]	@ movhi
+ 187:Core/Src/zigbee_edc24.c ****     //int32_t time;
+ 188:Core/Src/zigbee_edc24.c ****     //time=(int32_t)(gameStatusMessage[38+28*orderNo]+(gameStatusMessage[39+28*orderNo]<<8)+(gameSt
+ 189:Core/Src/zigbee_edc24.c ****     order.timeLimit=*((int32_t*)(&gameStatusMessage[26+18*orderNo]));
+ 758              		.loc 1 189 5 is_stmt 1 view .LVU185
+ 759              		.loc 1 189 55 is_stmt 0 view .LVU186
+ 760 0030 04F11A03 		add	r3, r4, #26
+ 761              		.loc 1 189 21 view .LVU187
+ 762 0034 F358     		ldr	r3, [r6, r3]
+ 763              		.loc 1 189 20 view .LVU188
+ 764 0036 8360     		str	r3, [r0, #8]
+ 190:Core/Src/zigbee_edc24.c ****     order.commission=change_float_data(&gameStatusMessage[30+18*orderNo]);
+ 765              		.loc 1 190 5 is_stmt 1 view .LVU189
+ 766              		.loc 1 190 61 is_stmt 0 view .LVU190
+ 767 0038 04F11E00 		add	r0, r4, #30
+ 768              	.LVL45:
+ 769              		.loc 1 190 22 view .LVU191
+ 770 003c 3044     		add	r0, r0, r6
+ 771 003e FFF7FEFF 		bl	change_float_data
+ 772              	.LVL46:
+ 773              		.loc 1 190 21 view .LVU192
+ 774 0042 85ED040A 		vstr.32	s0, [r5, #16]
+ 191:Core/Src/zigbee_edc24.c ****     //order.orderId=(int32_t)(gameStatusMessage[46+28*orderNo]+(gameStatusMessage[47+28*orderNo]<<8
+ 192:Core/Src/zigbee_edc24.c ****     order.orderId=*((int16_t*)(&gameStatusMessage[34+18*orderNo]));
+ 775              		.loc 1 192 5 is_stmt 1 view .LVU193
+ 776              		.loc 1 192 53 is_stmt 0 view .LVU194
+ 777 0046 2234     		adds	r4, r4, #34
+ 778              		.loc 1 192 19 view .LVU195
+ 779 0048 335F     		ldrsh	r3, [r6, r4]
+ 780              		.loc 1 192 18 view .LVU196
+ 781 004a AB81     		strh	r3, [r5, #12]	@ movhi
+ 193:Core/Src/zigbee_edc24.c ****     return order;
+ 782              		.loc 1 193 5 is_stmt 1 view .LVU197
+ 194:Core/Src/zigbee_edc24.c **** }
+ 783              		.loc 1 194 1 is_stmt 0 view .LVU198
+ 784 004c 2846     		mov	r0, r5
+ 785 004e 70BD     		pop	{r4, r5, r6, pc}
+ 786              	.LVL47:
+ 787              	.L59:
+ 788              		.loc 1 194 1 view .LVU199
+ 789              		.align	2
+ 790              	.L58:
+ 791 0050 00000000 		.word	.LANCHOR4
+ 792              		.cfi_endproc
+ 793              	.LFE142:
+ 795              		.section	.text.getLatestPendingOrder,"ax",%progbits
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 19
+
+
+ 796              		.align	1
+ 797              		.global	getLatestPendingOrder
+ 798              		.syntax unified
+ 799              		.thumb
+ 800              		.thumb_func
+ 802              	getLatestPendingOrder:
+ 803              	.LVL48:
+ 804              	.LFB143:
+ 195:Core/Src/zigbee_edc24.c **** 
+ 196:Core/Src/zigbee_edc24.c **** Order_edc24 getLatestPendingOrder()
+ 197:Core/Src/zigbee_edc24.c **** {
+ 805              		.loc 1 197 1 is_stmt 1 view -0
+ 806              		.cfi_startproc
+ 807              		@ args = 0, pretend = 0, frame = 0
+ 808              		@ frame_needed = 0, uses_anonymous_args = 0
+ 809              		.loc 1 197 1 is_stmt 0 view .LVU201
+ 810 0000 70B5     		push	{r4, r5, r6, lr}
+ 811              	.LCFI7:
+ 812              		.cfi_def_cfa_offset 16
+ 813              		.cfi_offset 4, -16
+ 814              		.cfi_offset 5, -12
+ 815              		.cfi_offset 6, -8
+ 816              		.cfi_offset 14, -4
+ 817 0002 0546     		mov	r5, r0
+ 198:Core/Src/zigbee_edc24.c ****     int32_t tmpnum=(int32_t)gameStatusMessage[21];
+ 818              		.loc 1 198 5 is_stmt 1 view .LVU202
+ 819              		.loc 1 198 46 is_stmt 0 view .LVU203
+ 820 0004 134E     		ldr	r6, .L62
+ 821 0006 747D     		ldrb	r4, [r6, #21]	@ zero_extendqisi2
+ 822              	.LVL49:
+ 199:Core/Src/zigbee_edc24.c ****     Order_edc24 order;
+ 823              		.loc 1 199 5 is_stmt 1 view .LVU204
+ 200:Core/Src/zigbee_edc24.c ****     //order.depPos.x=(int32_t)(gameStatusMessage[22+28*tmpnum]+(gameStatusMessage[23+28*tmpnum]<<8)
+ 201:Core/Src/zigbee_edc24.c ****     //order.depPos.y=(int32_t)(gameStatusMessage[26+28*tmpnum]+(gameStatusMessage[27+28*tmpnum]<<8)
+ 202:Core/Src/zigbee_edc24.c ****     //order.desPos.x=(int32_t)(gameStatusMessage[30+28*tmpnum]+(gameStatusMessage[31+28*tmpnum]<<8)
+ 203:Core/Src/zigbee_edc24.c ****     //order.desPos.y=(int32_t)(gameStatusMessage[34+28*tmpnum]+(gameStatusMessage[35+28*tmpnum]<<8)
+ 204:Core/Src/zigbee_edc24.c ****     order.depPos.x=*((int16_t*)(&gameStatusMessage[18+18*tmpnum]));
+ 824              		.loc 1 204 5 view .LVU205
+ 825              		.loc 1 204 54 is_stmt 0 view .LVU206
+ 826 0008 631C     		adds	r3, r4, #1
+ 827 000a 03EBC303 		add	r3, r3, r3, lsl #3
+ 828              		.loc 1 204 20 view .LVU207
+ 829 000e 36F91330 		ldrsh	r3, [r6, r3, lsl #1]
+ 830              		.loc 1 204 19 view .LVU208
+ 831 0012 0380     		strh	r3, [r0]	@ movhi
+ 205:Core/Src/zigbee_edc24.c ****     order.depPos.y=*((int16_t*)(&gameStatusMessage[20+18*tmpnum]));
+ 832              		.loc 1 205 5 is_stmt 1 view .LVU209
+ 833              		.loc 1 205 57 is_stmt 0 view .LVU210
+ 834 0014 04EBC404 		add	r4, r4, r4, lsl #3
+ 835              	.LVL50:
+ 836              		.loc 1 205 57 view .LVU211
+ 837 0018 6400     		lsls	r4, r4, #1
+ 838              		.loc 1 205 54 view .LVU212
+ 839 001a 04F11403 		add	r3, r4, #20
+ 840              		.loc 1 205 20 view .LVU213
+ 841 001e F35E     		ldrsh	r3, [r6, r3]
+ 842              		.loc 1 205 19 view .LVU214
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 20
+
+
+ 843 0020 4380     		strh	r3, [r0, #2]	@ movhi
+ 206:Core/Src/zigbee_edc24.c ****     order.desPos.x=*((int16_t*)(&gameStatusMessage[22+18*tmpnum]));
+ 844              		.loc 1 206 5 is_stmt 1 view .LVU215
+ 845              		.loc 1 206 54 is_stmt 0 view .LVU216
+ 846 0022 04F11603 		add	r3, r4, #22
+ 847              		.loc 1 206 20 view .LVU217
+ 848 0026 F35E     		ldrsh	r3, [r6, r3]
+ 849              		.loc 1 206 19 view .LVU218
+ 850 0028 8380     		strh	r3, [r0, #4]	@ movhi
+ 207:Core/Src/zigbee_edc24.c ****     order.desPos.y=*((int16_t*)(&gameStatusMessage[24+18*tmpnum]));
+ 851              		.loc 1 207 5 is_stmt 1 view .LVU219
+ 852              		.loc 1 207 54 is_stmt 0 view .LVU220
+ 853 002a 04F11803 		add	r3, r4, #24
+ 854              		.loc 1 207 20 view .LVU221
+ 855 002e F35E     		ldrsh	r3, [r6, r3]
+ 856              		.loc 1 207 19 view .LVU222
+ 857 0030 C380     		strh	r3, [r0, #6]	@ movhi
+ 208:Core/Src/zigbee_edc24.c ****     //int32_t time;
+ 209:Core/Src/zigbee_edc24.c ****     //time=(int32_t)(gameStatusMessage[38+28*tmpnum]+(gameStatusMessage[39+28*tmpnum]<<8)+(gameStat
+ 210:Core/Src/zigbee_edc24.c ****     order.timeLimit=*((int32_t*)(&gameStatusMessage[26+18*tmpnum]));
+ 858              		.loc 1 210 5 is_stmt 1 view .LVU223
+ 859              		.loc 1 210 55 is_stmt 0 view .LVU224
+ 860 0032 04F11A03 		add	r3, r4, #26
+ 861              		.loc 1 210 21 view .LVU225
+ 862 0036 F358     		ldr	r3, [r6, r3]
+ 863              		.loc 1 210 20 view .LVU226
+ 864 0038 8360     		str	r3, [r0, #8]
+ 211:Core/Src/zigbee_edc24.c ****     order.commission=change_float_data(&gameStatusMessage[30+18*tmpnum]);
+ 865              		.loc 1 211 5 is_stmt 1 view .LVU227
+ 866              		.loc 1 211 61 is_stmt 0 view .LVU228
+ 867 003a 04F11E00 		add	r0, r4, #30
+ 868              	.LVL51:
+ 869              		.loc 1 211 22 view .LVU229
+ 870 003e 3044     		add	r0, r0, r6
+ 871 0040 FFF7FEFF 		bl	change_float_data
+ 872              	.LVL52:
+ 873              		.loc 1 211 21 view .LVU230
+ 874 0044 85ED040A 		vstr.32	s0, [r5, #16]
+ 212:Core/Src/zigbee_edc24.c ****     //order.orderId=(int32_t)(gameStatusMessage[46+28*tmpnum]+(gameStatusMessage[47+28*tmpnum]<<8)+
+ 213:Core/Src/zigbee_edc24.c ****     order.orderId=*((int16_t*)(&gameStatusMessage[34+18*tmpnum]));
+ 875              		.loc 1 213 5 is_stmt 1 view .LVU231
+ 876              		.loc 1 213 53 is_stmt 0 view .LVU232
+ 877 0048 2234     		adds	r4, r4, #34
+ 878              		.loc 1 213 19 view .LVU233
+ 879 004a 335F     		ldrsh	r3, [r6, r4]
+ 880              		.loc 1 213 18 view .LVU234
+ 881 004c AB81     		strh	r3, [r5, #12]	@ movhi
+ 214:Core/Src/zigbee_edc24.c ****     return order;
+ 882              		.loc 1 214 5 is_stmt 1 view .LVU235
+ 215:Core/Src/zigbee_edc24.c **** }
+ 883              		.loc 1 215 1 is_stmt 0 view .LVU236
+ 884 004e 2846     		mov	r0, r5
+ 885 0050 70BD     		pop	{r4, r5, r6, pc}
+ 886              	.LVL53:
+ 887              	.L63:
+ 888              		.loc 1 215 1 view .LVU237
+ 889 0052 00BF     		.align	2
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 21
+
+
+ 890              	.L62:
+ 891 0054 00000000 		.word	.LANCHOR4
+ 892              		.cfi_endproc
+ 893              	.LFE143:
+ 895              		.section	.text.getGameStage,"ax",%progbits
+ 896              		.align	1
+ 897              		.global	getGameStage
+ 898              		.syntax unified
+ 899              		.thumb
+ 900              		.thumb_func
+ 902              	getGameStage:
+ 903              	.LFB144:
+ 216:Core/Src/zigbee_edc24.c **** 
+ 217:Core/Src/zigbee_edc24.c **** GameStage_edc24 getGameStage()
+ 218:Core/Src/zigbee_edc24.c **** {
+ 904              		.loc 1 218 1 is_stmt 1 view -0
+ 905              		.cfi_startproc
+ 906              		@ args = 0, pretend = 0, frame = 0
+ 907              		@ frame_needed = 0, uses_anonymous_args = 0
+ 908              		@ link register save eliminated.
+ 219:Core/Src/zigbee_edc24.c ****     uint8_t stage;
+ 909              		.loc 1 219 5 view .LVU239
+ 220:Core/Src/zigbee_edc24.c ****     stage=gameInfoMessage[0];
+ 910              		.loc 1 220 5 view .LVU240
+ 911              	.LVL54:
+ 221:Core/Src/zigbee_edc24.c ****     return (GameStage_edc24)stage;
+ 912              		.loc 1 221 5 view .LVU241
+ 222:Core/Src/zigbee_edc24.c **** }
+ 913              		.loc 1 222 1 is_stmt 0 view .LVU242
+ 914 0000 014B     		ldr	r3, .L65
+ 915 0002 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 916 0004 7047     		bx	lr
+ 917              	.L66:
+ 918 0006 00BF     		.align	2
+ 919              	.L65:
+ 920 0008 00000000 		.word	.LANCHOR3
+ 921              		.cfi_endproc
+ 922              	.LFE144:
+ 924              		.section	.text.getOneBarrier,"ax",%progbits
+ 925              		.align	1
+ 926              		.global	getOneBarrier
+ 927              		.syntax unified
+ 928              		.thumb
+ 929              		.thumb_func
+ 931              	getOneBarrier:
+ 932              	.LVL55:
+ 933              	.LFB145:
+ 223:Core/Src/zigbee_edc24.c **** 
+ 224:Core/Src/zigbee_edc24.c **** Barrier_edc24 getOneBarrier(uint8_t barrierNo)
+ 225:Core/Src/zigbee_edc24.c **** {
+ 934              		.loc 1 225 1 is_stmt 1 view -0
+ 935              		.cfi_startproc
+ 936              		@ args = 0, pretend = 0, frame = 8
+ 937              		@ frame_needed = 0, uses_anonymous_args = 0
+ 938              		@ link register save eliminated.
+ 939              		.loc 1 225 1 is_stmt 0 view .LVU244
+ 940 0000 82B0     		sub	sp, sp, #8
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 22
+
+
+ 941              	.LCFI8:
+ 942              		.cfi_def_cfa_offset 8
+ 943 0002 0346     		mov	r3, r0
+ 226:Core/Src/zigbee_edc24.c ****     Barrier_edc24 barrier;
+ 944              		.loc 1 226 5 is_stmt 1 view .LVU245
+ 227:Core/Src/zigbee_edc24.c ****     //barrier.pos_1.x=(int32_t)(gameInfoMessage[2+17*barrierNo]+(gameInfoMessage[3+17*barrierNo]<<8
+ 228:Core/Src/zigbee_edc24.c ****     //barrier.pos_1.y=(int32_t)(gameInfoMessage[6+17*barrierNo]+(gameInfoMessage[7+17*barrierNo]<<8
+ 229:Core/Src/zigbee_edc24.c ****     //barrier.pos_2.x=(int32_t)(gameInfoMessage[10+17*barrierNo]+(gameInfoMessage[11+17*barrierNo]<
+ 230:Core/Src/zigbee_edc24.c ****     //barrier.pos_2.y=(int32_t)(gameInfoMessage[14+17*barrierNo]+(gameInfoMessage[15+17*barrierNo]<
+ 231:Core/Src/zigbee_edc24.c ****     barrier.pos_1.x=*((int16_t*)(&gameInfoMessage[2+8*barrierNo]));
+ 945              		.loc 1 231 5 view .LVU246
+ 946              		.loc 1 231 54 is_stmt 0 view .LVU247
+ 947 0004 CA00     		lsls	r2, r1, #3
+ 948              		.loc 1 231 52 view .LVU248
+ 949 0006 02F1020C 		add	ip, r2, #2
+ 950              		.loc 1 231 34 view .LVU249
+ 951 000a 0D48     		ldr	r0, .L69
+ 952              	.LVL56:
+ 953              		.loc 1 231 21 view .LVU250
+ 954 000c 30F90CC0 		ldrsh	ip, [r0, ip]
+ 955              		.loc 1 231 20 view .LVU251
+ 956 0010 ADF800C0 		strh	ip, [sp]	@ movhi
+ 232:Core/Src/zigbee_edc24.c ****     barrier.pos_1.y=*((int16_t*)(&gameInfoMessage[4+8*barrierNo]));
+ 957              		.loc 1 232 5 is_stmt 1 view .LVU252
+ 958              		.loc 1 232 52 is_stmt 0 view .LVU253
+ 959 0014 02F1040C 		add	ip, r2, #4
+ 960              		.loc 1 232 21 view .LVU254
+ 961 0018 30F90CC0 		ldrsh	ip, [r0, ip]
+ 962              		.loc 1 232 20 view .LVU255
+ 963 001c ADF802C0 		strh	ip, [sp, #2]	@ movhi
+ 233:Core/Src/zigbee_edc24.c ****     barrier.pos_2.x=*((int16_t*)(&gameInfoMessage[6+8*barrierNo]));
+ 964              		.loc 1 233 5 is_stmt 1 view .LVU256
+ 965              		.loc 1 233 52 is_stmt 0 view .LVU257
+ 966 0020 0632     		adds	r2, r2, #6
+ 967              		.loc 1 233 21 view .LVU258
+ 968 0022 825E     		ldrsh	r2, [r0, r2]
+ 969              		.loc 1 233 20 view .LVU259
+ 970 0024 ADF80420 		strh	r2, [sp, #4]	@ movhi
+ 234:Core/Src/zigbee_edc24.c ****     barrier.pos_2.y=*((int16_t*)(&gameInfoMessage[8+8*barrierNo]));
+ 971              		.loc 1 234 5 is_stmt 1 view .LVU260
+ 972              		.loc 1 234 52 is_stmt 0 view .LVU261
+ 973 0028 0131     		adds	r1, r1, #1
+ 974              	.LVL57:
+ 975              		.loc 1 234 21 view .LVU262
+ 976 002a 30F93120 		ldrsh	r2, [r0, r1, lsl #3]
+ 977              		.loc 1 234 20 view .LVU263
+ 978 002e ADF80620 		strh	r2, [sp, #6]	@ movhi
+ 235:Core/Src/zigbee_edc24.c ****     return barrier;
+ 979              		.loc 1 235 5 is_stmt 1 view .LVU264
+ 980              		.loc 1 235 12 is_stmt 0 view .LVU265
+ 981 0032 6A46     		mov	r2, sp
+ 982 0034 03CA     		ldmia	r2!, {r0, r1}
+ 983 0036 1860     		str	r0, [r3]	@ unaligned
+ 984 0038 5960     		str	r1, [r3, #4]	@ unaligned
+ 236:Core/Src/zigbee_edc24.c **** }
+ 985              		.loc 1 236 1 view .LVU266
+ 986 003a 1846     		mov	r0, r3
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 23
+
+
+ 987 003c 02B0     		add	sp, sp, #8
+ 988              	.LCFI9:
+ 989              		.cfi_def_cfa_offset 0
+ 990              		@ sp needed
+ 991 003e 7047     		bx	lr
+ 992              	.L70:
+ 993              		.align	2
+ 994              	.L69:
+ 995 0040 00000000 		.word	.LANCHOR3
+ 996              		.cfi_endproc
+ 997              	.LFE145:
+ 999              		.section	.text.getHalfGameDuration,"ax",%progbits
+ 1000              		.align	1
+ 1001              		.global	getHalfGameDuration
+ 1002              		.syntax unified
+ 1003              		.thumb
+ 1004              		.thumb_func
+ 1006              	getHalfGameDuration:
+ 1007              	.LFB146:
+ 237:Core/Src/zigbee_edc24.c **** 
+ 238:Core/Src/zigbee_edc24.c **** int32_t getHalfGameDuration()
+ 239:Core/Src/zigbee_edc24.c **** {
+ 1008              		.loc 1 239 1 is_stmt 1 view -0
+ 1009              		.cfi_startproc
+ 1010              		@ args = 0, pretend = 0, frame = 0
+ 1011              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1012              		@ link register save eliminated.
+ 240:Core/Src/zigbee_edc24.c ****     int32_t time;
+ 1013              		.loc 1 240 5 view .LVU268
+ 241:Core/Src/zigbee_edc24.c ****     //time=(int32_t)(gameInfoMessage[86]+(gameInfoMessage[87]<<8)+(gameInfoMessage[88]<<16)+(gameIn
+ 242:Core/Src/zigbee_edc24.c ****     time=*((int32_t*)(&gameInfoMessage[42]));
+ 1014              		.loc 1 242 5 view .LVU269
+ 1015              	.LVL58:
+ 243:Core/Src/zigbee_edc24.c ****     return (int32_t)time;
+ 1016              		.loc 1 243 5 view .LVU270
+ 244:Core/Src/zigbee_edc24.c **** }
+ 1017              		.loc 1 244 1 is_stmt 0 view .LVU271
+ 1018 0000 014B     		ldr	r3, .L72
+ 1019 0002 D3F82A00 		ldr	r0, [r3, #42]	@ unaligned
+ 1020 0006 7047     		bx	lr
+ 1021              	.L73:
+ 1022              		.align	2
+ 1023              	.L72:
+ 1024 0008 00000000 		.word	.LANCHOR3
+ 1025              		.cfi_endproc
+ 1026              	.LFE146:
+ 1028              		.section	.text.getOwnChargingPileNum,"ax",%progbits
+ 1029              		.align	1
+ 1030              		.global	getOwnChargingPileNum
+ 1031              		.syntax unified
+ 1032              		.thumb
+ 1033              		.thumb_func
+ 1035              	getOwnChargingPileNum:
+ 1036              	.LFB147:
+ 245:Core/Src/zigbee_edc24.c **** 
+ 246:Core/Src/zigbee_edc24.c **** uint8_t getOwnChargingPileNum()
+ 247:Core/Src/zigbee_edc24.c **** {
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 24
+
+
+ 1037              		.loc 1 247 1 is_stmt 1 view -0
+ 1038              		.cfi_startproc
+ 1039              		@ args = 0, pretend = 0, frame = 0
+ 1040              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1041              		@ link register save eliminated.
+ 248:Core/Src/zigbee_edc24.c ****     return gameInfoMessage[46];
+ 1042              		.loc 1 248 5 view .LVU273
+ 249:Core/Src/zigbee_edc24.c **** }
+ 1043              		.loc 1 249 1 is_stmt 0 view .LVU274
+ 1044 0000 014B     		ldr	r3, .L75
+ 1045 0002 93F82E00 		ldrb	r0, [r3, #46]	@ zero_extendqisi2
+ 1046 0006 7047     		bx	lr
+ 1047              	.L76:
+ 1048              		.align	2
+ 1049              	.L75:
+ 1050 0008 00000000 		.word	.LANCHOR3
+ 1051              		.cfi_endproc
+ 1052              	.LFE147:
+ 1054              		.section	.text.getOppChargingPileNum,"ax",%progbits
+ 1055              		.align	1
+ 1056              		.global	getOppChargingPileNum
+ 1057              		.syntax unified
+ 1058              		.thumb
+ 1059              		.thumb_func
+ 1061              	getOppChargingPileNum:
+ 1062              	.LFB148:
+ 250:Core/Src/zigbee_edc24.c **** 
+ 251:Core/Src/zigbee_edc24.c **** uint8_t getOppChargingPileNum()
+ 252:Core/Src/zigbee_edc24.c **** {
+ 1063              		.loc 1 252 1 is_stmt 1 view -0
+ 1064              		.cfi_startproc
+ 1065              		@ args = 0, pretend = 0, frame = 0
+ 1066              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1067              		@ link register save eliminated.
+ 253:Core/Src/zigbee_edc24.c ****     uint8_t tmp;
+ 1068              		.loc 1 253 5 view .LVU276
+ 254:Core/Src/zigbee_edc24.c ****     tmp=gameInfoMessage[46];
+ 1069              		.loc 1 254 5 view .LVU277
+ 1070              		.loc 1 254 8 is_stmt 0 view .LVU278
+ 1071 0000 034A     		ldr	r2, .L78
+ 1072 0002 92F82E30 		ldrb	r3, [r2, #46]	@ zero_extendqisi2
+ 1073              	.LVL59:
+ 255:Core/Src/zigbee_edc24.c ****     return gameInfoMessage[47+4*tmp];
+ 1074              		.loc 1 255 5 is_stmt 1 view .LVU279
+ 1075              		.loc 1 255 32 is_stmt 0 view .LVU280
+ 1076 0006 9B00     		lsls	r3, r3, #2
+ 1077              		.loc 1 255 30 view .LVU281
+ 1078 0008 2F33     		adds	r3, r3, #47
+ 256:Core/Src/zigbee_edc24.c **** }
+ 1079              		.loc 1 256 1 view .LVU282
+ 1080 000a D05C     		ldrb	r0, [r2, r3]	@ zero_extendqisi2
+ 1081 000c 7047     		bx	lr
+ 1082              	.L79:
+ 1083 000e 00BF     		.align	2
+ 1084              	.L78:
+ 1085 0010 00000000 		.word	.LANCHOR3
+ 1086              		.cfi_endproc
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 25
+
+
+ 1087              	.LFE148:
+ 1089              		.section	.text.getOneOwnPile,"ax",%progbits
+ 1090              		.align	1
+ 1091              		.global	getOneOwnPile
+ 1092              		.syntax unified
+ 1093              		.thumb
+ 1094              		.thumb_func
+ 1096              	getOneOwnPile:
+ 1097              	.LVL60:
+ 1098              	.LFB149:
+ 257:Core/Src/zigbee_edc24.c **** 
+ 258:Core/Src/zigbee_edc24.c **** Position_edc24 getOneOwnPile(uint8_t pileNo)
+ 259:Core/Src/zigbee_edc24.c **** {
+ 1099              		.loc 1 259 1 is_stmt 1 view -0
+ 1100              		.cfi_startproc
+ 1101              		@ args = 0, pretend = 0, frame = 8
+ 1102              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1103              		@ link register save eliminated.
+ 1104              		.loc 1 259 1 is_stmt 0 view .LVU284
+ 1105 0000 82B0     		sub	sp, sp, #8
+ 1106              	.LCFI10:
+ 1107              		.cfi_def_cfa_offset 8
+ 260:Core/Src/zigbee_edc24.c ****     Position_edc24 pos;
+ 1108              		.loc 1 260 5 is_stmt 1 view .LVU285
+ 261:Core/Src/zigbee_edc24.c ****     //pos.x=(int32_t)(gameInfoMessage[91+8*pileNo]+(gameInfoMessage[92+8*pileNo]<<8)+(gameInfoMessa
+ 262:Core/Src/zigbee_edc24.c ****     //pos.y=(int32_t)(gameInfoMessage[95+8*pileNo]+(gameInfoMessage[96+8*pileNo]<<8)+(gameInfoMessa
+ 263:Core/Src/zigbee_edc24.c ****     pos.x=*((int16_t*)(&gameInfoMessage[47+4*pileNo]));
+ 1109              		.loc 1 263 5 view .LVU286
+ 1110              		.loc 1 263 45 is_stmt 0 view .LVU287
+ 1111 0002 8000     		lsls	r0, r0, #2
+ 1112              	.LVL61:
+ 1113              		.loc 1 263 43 view .LVU288
+ 1114 0004 00F12F02 		add	r2, r0, #47
+ 1115              		.loc 1 263 24 view .LVU289
+ 1116 0008 0A4B     		ldr	r3, .L82
+ 1117              		.loc 1 263 11 view .LVU290
+ 1118 000a 9A5E     		ldrsh	r2, [r3, r2]
+ 1119              		.loc 1 263 10 view .LVU291
+ 1120 000c ADF80020 		strh	r2, [sp]	@ movhi
+ 264:Core/Src/zigbee_edc24.c ****     pos.y=*((int16_t*)(&gameInfoMessage[49+4*pileNo]));
+ 1121              		.loc 1 264 5 is_stmt 1 view .LVU292
+ 1122              		.loc 1 264 43 is_stmt 0 view .LVU293
+ 1123 0010 3130     		adds	r0, r0, #49
+ 1124              		.loc 1 264 11 view .LVU294
+ 1125 0012 1B5E     		ldrsh	r3, [r3, r0]
+ 1126              		.loc 1 264 10 view .LVU295
+ 1127 0014 ADF80230 		strh	r3, [sp, #2]	@ movhi
+ 265:Core/Src/zigbee_edc24.c ****     return pos;
+ 1128              		.loc 1 265 5 is_stmt 1 view .LVU296
+ 1129              		.loc 1 265 12 is_stmt 0 view .LVU297
+ 1130 0018 009B     		ldr	r3, [sp]
+ 1131 001a 0193     		str	r3, [sp, #4]
+ 1132 001c 0020     		movs	r0, #0
+ 1133 001e BDF80430 		ldrh	r3, [sp, #4]
+ 1134 0022 63F30F00 		bfi	r0, r3, #0, #16
+ 1135 0026 BDF80630 		ldrh	r3, [sp, #6]
+ 1136 002a 63F31F40 		bfi	r0, r3, #16, #16
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 26
+
+
+ 266:Core/Src/zigbee_edc24.c **** }
+ 1137              		.loc 1 266 1 view .LVU298
+ 1138 002e 02B0     		add	sp, sp, #8
+ 1139              	.LCFI11:
+ 1140              		.cfi_def_cfa_offset 0
+ 1141              		@ sp needed
+ 1142 0030 7047     		bx	lr
+ 1143              	.L83:
+ 1144 0032 00BF     		.align	2
+ 1145              	.L82:
+ 1146 0034 00000000 		.word	.LANCHOR3
+ 1147              		.cfi_endproc
+ 1148              	.LFE149:
+ 1150              		.section	.text.getOneOppPile,"ax",%progbits
+ 1151              		.align	1
+ 1152              		.global	getOneOppPile
+ 1153              		.syntax unified
+ 1154              		.thumb
+ 1155              		.thumb_func
+ 1157              	getOneOppPile:
+ 1158              	.LVL62:
+ 1159              	.LFB150:
+ 267:Core/Src/zigbee_edc24.c **** 
+ 268:Core/Src/zigbee_edc24.c **** Position_edc24 getOneOppPile(uint8_t pileNo)
+ 269:Core/Src/zigbee_edc24.c **** {
+ 1160              		.loc 1 269 1 is_stmt 1 view -0
+ 1161              		.cfi_startproc
+ 1162              		@ args = 0, pretend = 0, frame = 8
+ 1163              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1164              		@ link register save eliminated.
+ 1165              		.loc 1 269 1 is_stmt 0 view .LVU300
+ 1166 0000 82B0     		sub	sp, sp, #8
+ 1167              	.LCFI12:
+ 1168              		.cfi_def_cfa_offset 8
+ 270:Core/Src/zigbee_edc24.c ****     uint8_t tmpnum;
+ 1169              		.loc 1 270 5 is_stmt 1 view .LVU301
+ 271:Core/Src/zigbee_edc24.c ****     tmpnum=gameInfoMessage[46];
+ 1170              		.loc 1 271 5 view .LVU302
+ 1171              		.loc 1 271 11 is_stmt 0 view .LVU303
+ 1172 0002 0C4A     		ldr	r2, .L86
+ 1173 0004 92F82E30 		ldrb	r3, [r2, #46]	@ zero_extendqisi2
+ 1174              	.LVL63:
+ 272:Core/Src/zigbee_edc24.c ****     Position_edc24 pos;
+ 1175              		.loc 1 272 5 is_stmt 1 view .LVU304
+ 273:Core/Src/zigbee_edc24.c ****     //pos.x=(int32_t)(gameInfoMessage[92+8*tmpnum+8*pileNo]+(gameInfoMessage[93+8*tmpnum+8*pileNo]<
+ 274:Core/Src/zigbee_edc24.c ****     //pos.y=(int32_t)(gameInfoMessage[96+8*tmpnum+8*pileNo]+(gameInfoMessage[97+8*tmpnum+8*pileNo]<
+ 275:Core/Src/zigbee_edc24.c ****     pos.x=*((int32_t*)(&gameInfoMessage[48+4*tmpnum+4*pileNo]));
+ 1176              		.loc 1 275 5 view .LVU305
+ 1177              		.loc 1 275 43 is_stmt 0 view .LVU306
+ 1178 0008 0C33     		adds	r3, r3, #12
+ 1179              		.loc 1 275 52 view .LVU307
+ 1180 000a 1844     		add	r0, r0, r3
+ 1181              	.LVL64:
+ 1182              		.loc 1 275 10 view .LVU308
+ 1183 000c 32F92030 		ldrsh	r3, [r2, r0, lsl #2]
+ 1184 0010 ADF80030 		strh	r3, [sp]	@ movhi
+ 276:Core/Src/zigbee_edc24.c ****     pos.y=*((int32_t*)(&gameInfoMessage[48+4*tmpnum+4*pileNo]));
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 27
+
+
+ 1185              		.loc 1 276 5 is_stmt 1 view .LVU309
+ 1186              		.loc 1 276 10 is_stmt 0 view .LVU310
+ 1187 0014 ADF80230 		strh	r3, [sp, #2]	@ movhi
+ 277:Core/Src/zigbee_edc24.c ****     return pos;
+ 1188              		.loc 1 277 5 is_stmt 1 view .LVU311
+ 1189              		.loc 1 277 12 is_stmt 0 view .LVU312
+ 1190 0018 009B     		ldr	r3, [sp]
+ 1191 001a 0193     		str	r3, [sp, #4]
+ 1192 001c 0020     		movs	r0, #0
+ 1193 001e BDF80430 		ldrh	r3, [sp, #4]
+ 1194 0022 63F30F00 		bfi	r0, r3, #0, #16
+ 1195 0026 BDF80630 		ldrh	r3, [sp, #6]
+ 1196 002a 63F31F40 		bfi	r0, r3, #16, #16
+ 278:Core/Src/zigbee_edc24.c **** }
+ 1197              		.loc 1 278 1 view .LVU313
+ 1198 002e 02B0     		add	sp, sp, #8
+ 1199              	.LCFI13:
+ 1200              		.cfi_def_cfa_offset 0
+ 1201              		@ sp needed
+ 1202 0030 7047     		bx	lr
+ 1203              	.L87:
+ 1204 0032 00BF     		.align	2
+ 1205              	.L86:
+ 1206 0034 00000000 		.word	.LANCHOR3
+ 1207              		.cfi_endproc
+ 1208              	.LFE150:
+ 1210              		.section	.text.reqGameInfo,"ax",%progbits
+ 1211              		.align	1
+ 1212              		.global	reqGameInfo
+ 1213              		.syntax unified
+ 1214              		.thumb
+ 1215              		.thumb_func
+ 1217              	reqGameInfo:
+ 1218              	.LFB151:
+ 279:Core/Src/zigbee_edc24.c **** 
+ 280:Core/Src/zigbee_edc24.c **** void reqGameInfo()
+ 281:Core/Src/zigbee_edc24.c **** {
+ 1219              		.loc 1 281 1 is_stmt 1 view -0
+ 1220              		.cfi_startproc
+ 1221              		@ args = 0, pretend = 0, frame = 0
+ 1222              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1223 0000 08B5     		push	{r3, lr}
+ 1224              	.LCFI14:
+ 1225              		.cfi_def_cfa_offset 8
+ 1226              		.cfi_offset 3, -8
+ 1227              		.cfi_offset 14, -4
+ 282:Core/Src/zigbee_edc24.c ****     HAL_UART_Transmit(zigbee_huart,zigbeeSend[0],6,HAL_MAX_DELAY);
+ 1228              		.loc 1 282 5 view .LVU315
+ 1229 0002 4FF0FF33 		mov	r3, #-1
+ 1230 0006 0622     		movs	r2, #6
+ 1231 0008 0249     		ldr	r1, .L90
+ 1232 000a 0348     		ldr	r0, .L90+4
+ 1233 000c 0068     		ldr	r0, [r0]
+ 1234 000e FFF7FEFF 		bl	HAL_UART_Transmit
+ 1235              	.LVL65:
+ 283:Core/Src/zigbee_edc24.c **** }
+ 1236              		.loc 1 283 1 is_stmt 0 view .LVU316
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 28
+
+
+ 1237 0012 08BD     		pop	{r3, pc}
+ 1238              	.L91:
+ 1239              		.align	2
+ 1240              	.L90:
+ 1241 0014 00000000 		.word	.LANCHOR5
+ 1242 0018 00000000 		.word	.LANCHOR0
+ 1243              		.cfi_endproc
+ 1244              	.LFE151:
+ 1246              		.section	.text.setChargingPile,"ax",%progbits
+ 1247              		.align	1
+ 1248              		.global	setChargingPile
+ 1249              		.syntax unified
+ 1250              		.thumb
+ 1251              		.thumb_func
+ 1253              	setChargingPile:
+ 1254              	.LFB152:
+ 284:Core/Src/zigbee_edc24.c **** 
+ 285:Core/Src/zigbee_edc24.c **** void setChargingPile()
+ 286:Core/Src/zigbee_edc24.c **** {
+ 1255              		.loc 1 286 1 is_stmt 1 view -0
+ 1256              		.cfi_startproc
+ 1257              		@ args = 0, pretend = 0, frame = 0
+ 1258              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1259 0000 08B5     		push	{r3, lr}
+ 1260              	.LCFI15:
+ 1261              		.cfi_def_cfa_offset 8
+ 1262              		.cfi_offset 3, -8
+ 1263              		.cfi_offset 14, -4
+ 287:Core/Src/zigbee_edc24.c ****     HAL_UART_Transmit(zigbee_huart,zigbeeSend[1],6,HAL_MAX_DELAY);
+ 1264              		.loc 1 287 5 view .LVU318
+ 1265 0002 4FF0FF33 		mov	r3, #-1
+ 1266 0006 0622     		movs	r2, #6
+ 1267 0008 0249     		ldr	r1, .L94
+ 1268 000a 0348     		ldr	r0, .L94+4
+ 1269 000c 0068     		ldr	r0, [r0]
+ 1270 000e FFF7FEFF 		bl	HAL_UART_Transmit
+ 1271              	.LVL66:
+ 288:Core/Src/zigbee_edc24.c **** }
+ 1272              		.loc 1 288 1 is_stmt 0 view .LVU319
+ 1273 0012 08BD     		pop	{r3, pc}
+ 1274              	.L95:
+ 1275              		.align	2
+ 1276              	.L94:
+ 1277 0014 06000000 		.word	.LANCHOR5+6
+ 1278 0018 00000000 		.word	.LANCHOR0
+ 1279              		.cfi_endproc
+ 1280              	.LFE152:
+ 1282              		.global	zigbee_huart
+ 1283              		.global	receive_flag
+ 1284              		.global	zigbeeSend
+ 1285              		.global	gameStatusMessage
+ 1286              		.global	gameInfoMessage
+ 1287              		.global	zigbeeMessage
+ 1288              		.section	.bss.gameInfoMessage,"aw",%nobits
+ 1289              		.align	2
+ 1290              		.set	.LANCHOR3,. + 0
+ 1293              	gameInfoMessage:
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 29
+
+
+ 1294 0000 00000000 		.space	100
+ 1294      00000000 
+ 1294      00000000 
+ 1294      00000000 
+ 1294      00000000 
+ 1295              		.section	.bss.gameStatusMessage,"aw",%nobits
+ 1296              		.align	2
+ 1297              		.set	.LANCHOR4,. + 0
+ 1300              	gameStatusMessage:
+ 1301 0000 00000000 		.space	150
+ 1301      00000000 
+ 1301      00000000 
+ 1301      00000000 
+ 1301      00000000 
+ 1302              		.section	.bss.receive_flag,"aw",%nobits
+ 1303              		.set	.LANCHOR1,. + 0
+ 1306              	receive_flag:
+ 1307 0000 00       		.space	1
+ 1308              		.section	.bss.zigbeeMessage,"aw",%nobits
+ 1309              		.align	2
+ 1310              		.set	.LANCHOR2,. + 0
+ 1313              	zigbeeMessage:
+ 1314 0000 00000000 		.space	200
+ 1314      00000000 
+ 1314      00000000 
+ 1314      00000000 
+ 1314      00000000 
+ 1315              		.section	.bss.zigbee_huart,"aw",%nobits
+ 1316              		.align	2
+ 1317              		.set	.LANCHOR0,. + 0
+ 1320              	zigbee_huart:
+ 1321 0000 00000000 		.space	4
+ 1322              		.section	.data.zigbeeSend,"aw"
+ 1323              		.align	2
+ 1324              		.set	.LANCHOR5,. + 0
+ 1327              	zigbeeSend:
+ 1328 0000 55AA0000 		.ascii	"U\252\000\000\000\000"
+ 1328      0000
+ 1329 0006 55AA0200 		.ascii	"U\252\002\000\000\000"
+ 1329      0000
+ 1330              		.text
+ 1331              	.Letext0:
+ 1332              		.file 2 "d:\\11.2 2022.02\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 1333              		.file 3 "d:\\11.2 2022.02\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1334              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 1335              		.file 5 "d:\\11.2 2022.02\\lib\\gcc\\arm-none-eabi\\11.2.1\\include\\stddef.h"
+ 1336              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 1337              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 1338              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 1339              		.file 9 "Core/Inc/zigbee_edc24.h"
+ 1340              		.file 10 "d:\\11.2 2022.02\\arm-none-eabi\\include\\string.h"
+ 1341              		.file 11 "<built-in>"
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 30
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 zigbee_edc24.c
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:20     .text.CalculateChecksum:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:25     .text.CalculateChecksum:00000000 CalculateChecksum
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:73     .text.change_float_data:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:78     .text.change_float_data:00000000 change_float_data
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:96     .text.HAL_UART_ErrorCallback:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:102    .text.HAL_UART_ErrorCallback:00000000 HAL_UART_ErrorCallback
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:150    .text.HAL_UART_ErrorCallback:00000024 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:157    .text.HAL_UARTEx_RxEventCallback:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:163    .text.HAL_UARTEx_RxEventCallback:00000000 HAL_UARTEx_RxEventCallback
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:192    .text.HAL_UARTEx_RxEventCallback:00000014 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:198    .text.zigbee_Init:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:204    .text.zigbee_Init:00000000 zigbee_Init
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:264    .text.zigbee_Init:0000003c $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:273    .text.zigbeeMessageRecord:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:279    .text.zigbeeMessageRecord:00000000 zigbeeMessageRecord
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:485    .text.zigbeeMessageRecord:000000c0 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:494    .text.getGameTime:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:500    .text.getGameTime:00000000 getGameTime
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:518    .text.getGameTime:00000008 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:523    .text.getGameStatus:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:529    .text.getGameStatus:00000000 getGameStatus
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:556    .text.getGameStatus:00000010 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:561    .text.getScore:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:567    .text.getScore:00000000 getScore
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:588    .text.getScore:0000000c $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:593    .text.getVehiclePos:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:599    .text.getVehiclePos:00000000 getVehiclePos
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:639    .text.getVehiclePos:00000030 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:644    .text.getRemainDist:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:650    .text.getRemainDist:00000000 getRemainDist
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:668    .text.getRemainDist:00000008 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:673    .text.getOrderNum:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:679    .text.getOrderNum:00000000 getOrderNum
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:694    .text.getOrderNum:00000008 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:699    .text.getOneOrder:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:705    .text.getOneOrder:00000000 getOneOrder
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:791    .text.getOneOrder:00000050 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:796    .text.getLatestPendingOrder:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:802    .text.getLatestPendingOrder:00000000 getLatestPendingOrder
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:891    .text.getLatestPendingOrder:00000054 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:896    .text.getGameStage:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:902    .text.getGameStage:00000000 getGameStage
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:920    .text.getGameStage:00000008 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:925    .text.getOneBarrier:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:931    .text.getOneBarrier:00000000 getOneBarrier
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:995    .text.getOneBarrier:00000040 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1000   .text.getHalfGameDuration:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1006   .text.getHalfGameDuration:00000000 getHalfGameDuration
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1024   .text.getHalfGameDuration:00000008 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1029   .text.getOwnChargingPileNum:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1035   .text.getOwnChargingPileNum:00000000 getOwnChargingPileNum
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1050   .text.getOwnChargingPileNum:00000008 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1055   .text.getOppChargingPileNum:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1061   .text.getOppChargingPileNum:00000000 getOppChargingPileNum
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1085   .text.getOppChargingPileNum:00000010 $d
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s 			page 31
+
+
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1090   .text.getOneOwnPile:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1096   .text.getOneOwnPile:00000000 getOneOwnPile
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1146   .text.getOneOwnPile:00000034 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1151   .text.getOneOppPile:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1157   .text.getOneOppPile:00000000 getOneOppPile
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1206   .text.getOneOppPile:00000034 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1211   .text.reqGameInfo:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1217   .text.reqGameInfo:00000000 reqGameInfo
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1241   .text.reqGameInfo:00000014 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1247   .text.setChargingPile:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1253   .text.setChargingPile:00000000 setChargingPile
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1277   .text.setChargingPile:00000014 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1320   .bss.zigbee_huart:00000000 zigbee_huart
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1306   .bss.receive_flag:00000000 receive_flag
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1327   .data.zigbeeSend:00000000 zigbeeSend
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1300   .bss.gameStatusMessage:00000000 gameStatusMessage
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1293   .bss.gameInfoMessage:00000000 gameInfoMessage
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1313   .bss.zigbeeMessage:00000000 zigbeeMessage
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1289   .bss.gameInfoMessage:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1296   .bss.gameStatusMessage:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1307   .bss.receive_flag:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1309   .bss.zigbeeMessage:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1316   .bss.zigbee_huart:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccTq0lCG.s:1323   .data.zigbeeSend:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_UARTEx_ReceiveToIdle_DMA
+memset
+HAL_UART_Transmit

@@ -1,0 +1,870 @@
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"inverse_kinematics.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.pos_idx_last,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	pos_idx_last:
+  26              	.LVL0:
+  27              	.LFB130:
+  28              		.file 1 "Core/Src/inverse_kinematics.c"
+   1:Core/Src/inverse_kinematics.c **** #include "inverse_kinematics.h"
+   2:Core/Src/inverse_kinematics.c **** 
+   3:Core/Src/inverse_kinematics.c **** pos_time_s self_pos_time[MAX_SELF_POS_TIME];
+   4:Core/Src/inverse_kinematics.c **** static uint8_t pos_idx=0;
+   5:Core/Src/inverse_kinematics.c **** static uint8_t data_flag;
+   6:Core/Src/inverse_kinematics.c **** 
+   7:Core/Src/inverse_kinematics.c **** static uint8_t pos_idx_last(uint8_t input)
+   8:Core/Src/inverse_kinematics.c **** {
+  29              		.loc 1 8 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+   9:Core/Src/inverse_kinematics.c ****     if(input==0)
+  34              		.loc 1 9 5 view .LVU1
+  35              		.loc 1 9 7 is_stmt 0 view .LVU2
+  36 0000 10B1     		cbz	r0, .L3
+  10:Core/Src/inverse_kinematics.c ****     {
+  11:Core/Src/inverse_kinematics.c ****         return MAX_SELF_POS_TIME-1;
+  12:Core/Src/inverse_kinematics.c ****     }
+  13:Core/Src/inverse_kinematics.c ****     else
+  14:Core/Src/inverse_kinematics.c ****     {
+  15:Core/Src/inverse_kinematics.c ****         return input-1;
+  37              		.loc 1 15 9 is_stmt 1 view .LVU3
+  38              		.loc 1 15 21 is_stmt 0 view .LVU4
+  39 0002 0138     		subs	r0, r0, #1
+  40              	.LVL1:
+  41              		.loc 1 15 21 view .LVU5
+  42 0004 C0B2     		uxtb	r0, r0
+  43 0006 7047     		bx	lr
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 2
+
+
+  44              	.LVL2:
+  45              	.L3:
+  11:Core/Src/inverse_kinematics.c ****     }
+  46              		.loc 1 11 16 view .LVU6
+  47 0008 0920     		movs	r0, #9
+  48              	.LVL3:
+  16:Core/Src/inverse_kinematics.c ****     }
+  17:Core/Src/inverse_kinematics.c **** }
+  49              		.loc 1 17 1 view .LVU7
+  50 000a 7047     		bx	lr
+  51              		.cfi_endproc
+  52              	.LFE130:
+  54              		.section	.text.self_position_init,"ax",%progbits
+  55              		.align	1
+  56              		.global	self_position_init
+  57              		.syntax unified
+  58              		.thumb
+  59              		.thumb_func
+  61              	self_position_init:
+  62              	.LFB131:
+  18:Core/Src/inverse_kinematics.c **** 
+  19:Core/Src/inverse_kinematics.c **** void self_position_init()
+  20:Core/Src/inverse_kinematics.c **** {
+  63              		.loc 1 20 1 is_stmt 1 view -0
+  64              		.cfi_startproc
+  65              		@ args = 0, pretend = 0, frame = 0
+  66              		@ frame_needed = 0, uses_anonymous_args = 0
+  67              		@ link register save eliminated.
+  21:Core/Src/inverse_kinematics.c ****     pos_idx=0;
+  68              		.loc 1 21 5 view .LVU9
+  69              		.loc 1 21 12 is_stmt 0 view .LVU10
+  70 0000 0023     		movs	r3, #0
+  71 0002 024A     		ldr	r2, .L5
+  72 0004 1370     		strb	r3, [r2]
+  22:Core/Src/inverse_kinematics.c ****     data_flag=0;
+  73              		.loc 1 22 5 is_stmt 1 view .LVU11
+  74              		.loc 1 22 14 is_stmt 0 view .LVU12
+  75 0006 024A     		ldr	r2, .L5+4
+  76 0008 1370     		strb	r3, [r2]
+  23:Core/Src/inverse_kinematics.c **** }
+  77              		.loc 1 23 1 view .LVU13
+  78 000a 7047     		bx	lr
+  79              	.L6:
+  80              		.align	2
+  81              	.L5:
+  82 000c 00000000 		.word	.LANCHOR0
+  83 0010 00000000 		.word	.LANCHOR1
+  84              		.cfi_endproc
+  85              	.LFE131:
+  87              		.section	.text.self_position_update,"ax",%progbits
+  88              		.align	1
+  89              		.global	self_position_update
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  94              	self_position_update:
+  95              	.LFB132:
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 3
+
+
+  24:Core/Src/inverse_kinematics.c **** 
+  25:Core/Src/inverse_kinematics.c **** void self_position_update()
+  26:Core/Src/inverse_kinematics.c **** {
+  96              		.loc 1 26 1 is_stmt 1 view -0
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 8
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+ 100 0000 30B5     		push	{r4, r5, lr}
+ 101              	.LCFI0:
+ 102              		.cfi_def_cfa_offset 12
+ 103              		.cfi_offset 4, -12
+ 104              		.cfi_offset 5, -8
+ 105              		.cfi_offset 14, -4
+ 106 0002 83B0     		sub	sp, sp, #12
+ 107              	.LCFI1:
+ 108              		.cfi_def_cfa_offset 24
+  27:Core/Src/inverse_kinematics.c ****     //self_pos_time[pos_idx].time=millis();
+  28:Core/Src/inverse_kinematics.c ****     self_pos_time[pos_idx].x=getVehiclePos().x;
+ 109              		.loc 1 28 5 view .LVU15
+ 110              		.loc 1 28 30 is_stmt 0 view .LVU16
+ 111 0004 FFF7FEFF 		bl	getVehiclePos
+ 112              	.LVL4:
+ 113 0008 0090     		str	r0, [sp]
+ 114              		.loc 1 28 27 view .LVU17
+ 115 000a 134D     		ldr	r5, .L12
+ 116 000c 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 117              		.loc 1 28 45 view .LVU18
+ 118 000e BDF90020 		ldrsh	r2, [sp]
+ 119              		.loc 1 28 29 view .LVU19
+ 120 0012 124C     		ldr	r4, .L12+4
+ 121 0014 03EB4303 		add	r3, r3, r3, lsl #1
+ 122 0018 24F83320 		strh	r2, [r4, r3, lsl #3]	@ movhi
+  29:Core/Src/inverse_kinematics.c ****     self_pos_time[pos_idx].y=getVehiclePos().y;
+ 123              		.loc 1 29 5 is_stmt 1 view .LVU20
+ 124              		.loc 1 29 30 is_stmt 0 view .LVU21
+ 125 001c FFF7FEFF 		bl	getVehiclePos
+ 126              	.LVL5:
+ 127 0020 0190     		str	r0, [sp, #4]
+ 128              		.loc 1 29 27 view .LVU22
+ 129 0022 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 130              		.loc 1 29 45 view .LVU23
+ 131 0024 BDF90620 		ldrsh	r2, [sp, #6]
+ 132              		.loc 1 29 29 view .LVU24
+ 133 0028 03EB4301 		add	r1, r3, r3, lsl #1
+ 134 002c 04EBC104 		add	r4, r4, r1, lsl #3
+ 135 0030 6280     		strh	r2, [r4, #2]	@ movhi
+  30:Core/Src/inverse_kinematics.c ****     if(pos_idx==MAX_SELF_POS_TIME-1)
+ 136              		.loc 1 30 5 is_stmt 1 view .LVU25
+ 137              		.loc 1 30 7 is_stmt 0 view .LVU26
+ 138 0032 092B     		cmp	r3, #9
+ 139 0034 0CD0     		beq	.L11
+  31:Core/Src/inverse_kinematics.c ****     {
+  32:Core/Src/inverse_kinematics.c ****         pos_idx=0;
+  33:Core/Src/inverse_kinematics.c ****     }
+  34:Core/Src/inverse_kinematics.c ****     else
+  35:Core/Src/inverse_kinematics.c ****     {
+  36:Core/Src/inverse_kinematics.c ****         pos_idx++;
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 4
+
+
+ 140              		.loc 1 36 9 is_stmt 1 view .LVU27
+ 141              		.loc 1 36 16 is_stmt 0 view .LVU28
+ 142 0036 0133     		adds	r3, r3, #1
+ 143 0038 DBB2     		uxtb	r3, r3
+ 144 003a 074A     		ldr	r2, .L12
+ 145 003c 1370     		strb	r3, [r2]
+  37:Core/Src/inverse_kinematics.c ****         if(data_flag==0&&pos_idx>=2)
+ 146              		.loc 1 37 9 is_stmt 1 view .LVU29
+ 147              		.loc 1 37 21 is_stmt 0 view .LVU30
+ 148 003e 084A     		ldr	r2, .L12+8
+ 149 0040 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 150              		.loc 1 37 11 view .LVU31
+ 151 0042 3AB9     		cbnz	r2, .L7
+ 152              		.loc 1 37 24 discriminator 1 view .LVU32
+ 153 0044 012B     		cmp	r3, #1
+ 154 0046 05D9     		bls	.L7
+  38:Core/Src/inverse_kinematics.c ****         {
+  39:Core/Src/inverse_kinematics.c ****             data_flag=1;
+ 155              		.loc 1 39 13 is_stmt 1 view .LVU33
+ 156              		.loc 1 39 22 is_stmt 0 view .LVU34
+ 157 0048 054B     		ldr	r3, .L12+8
+ 158 004a 0122     		movs	r2, #1
+ 159 004c 1A70     		strb	r2, [r3]
+  40:Core/Src/inverse_kinematics.c ****         }
+  41:Core/Src/inverse_kinematics.c ****     }
+  42:Core/Src/inverse_kinematics.c **** }
+ 160              		.loc 1 42 1 view .LVU35
+ 161 004e 01E0     		b	.L7
+ 162              	.L11:
+  32:Core/Src/inverse_kinematics.c ****     }
+ 163              		.loc 1 32 9 is_stmt 1 view .LVU36
+  32:Core/Src/inverse_kinematics.c ****     }
+ 164              		.loc 1 32 16 is_stmt 0 view .LVU37
+ 165 0050 0022     		movs	r2, #0
+ 166 0052 2A70     		strb	r2, [r5]
+ 167              	.L7:
+ 168              		.loc 1 42 1 view .LVU38
+ 169 0054 03B0     		add	sp, sp, #12
+ 170              	.LCFI2:
+ 171              		.cfi_def_cfa_offset 12
+ 172              		@ sp needed
+ 173 0056 30BD     		pop	{r4, r5, pc}
+ 174              	.L13:
+ 175              		.align	2
+ 176              	.L12:
+ 177 0058 00000000 		.word	.LANCHOR0
+ 178 005c 00000000 		.word	.LANCHOR2
+ 179 0060 00000000 		.word	.LANCHOR1
+ 180              		.cfi_endproc
+ 181              	.LFE132:
+ 183              		.global	__aeabi_ui2d
+ 184              		.global	__aeabi_dsub
+ 185              		.global	__aeabi_ddiv
+ 186              		.section	.text.calculate_vel,"ax",%progbits
+ 187              		.align	1
+ 188              		.global	calculate_vel
+ 189              		.syntax unified
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 5
+
+
+ 190              		.thumb
+ 191              		.thumb_func
+ 193              	calculate_vel:
+ 194              	.LFB133:
+  43:Core/Src/inverse_kinematics.c **** 
+  44:Core/Src/inverse_kinematics.c **** vel_s calculate_vel()
+  45:Core/Src/inverse_kinematics.c **** {
+ 195              		.loc 1 45 1 is_stmt 1 view -0
+ 196              		.cfi_startproc
+ 197              		@ args = 0, pretend = 0, frame = 80
+ 198              		@ frame_needed = 0, uses_anonymous_args = 0
+ 199 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 200              	.LCFI3:
+ 201              		.cfi_def_cfa_offset 36
+ 202              		.cfi_offset 4, -36
+ 203              		.cfi_offset 5, -32
+ 204              		.cfi_offset 6, -28
+ 205              		.cfi_offset 7, -24
+ 206              		.cfi_offset 8, -20
+ 207              		.cfi_offset 9, -16
+ 208              		.cfi_offset 10, -12
+ 209              		.cfi_offset 11, -8
+ 210              		.cfi_offset 14, -4
+ 211 0004 95B0     		sub	sp, sp, #84
+ 212              	.LCFI4:
+ 213              		.cfi_def_cfa_offset 120
+  46:Core/Src/inverse_kinematics.c ****     vel_s tmp_vel;
+ 214              		.loc 1 46 5 view .LVU40
+  47:Core/Src/inverse_kinematics.c ****     if(data_flag==0)
+ 215              		.loc 1 47 5 view .LVU41
+ 216              		.loc 1 47 17 is_stmt 0 view .LVU42
+ 217 0006 354B     		ldr	r3, .L18
+ 218 0008 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 219              		.loc 1 47 7 view .LVU43
+ 220 000a C3B9     		cbnz	r3, .L15
+  48:Core/Src/inverse_kinematics.c ****     {
+  49:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_x=0;
+ 221              		.loc 1 49 9 is_stmt 1 view .LVU44
+ 222              		.loc 1 49 22 is_stmt 0 view .LVU45
+ 223 000c 0022     		movs	r2, #0
+ 224 000e 0023     		movs	r3, #0
+ 225 0010 CDE90823 		strd	r2, [sp, #32]
+  50:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=0;
+ 226              		.loc 1 50 9 is_stmt 1 view .LVU46
+ 227              		.loc 1 50 22 is_stmt 0 view .LVU47
+ 228 0014 CDE90A23 		strd	r2, [sp, #40]
+  51:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=0;
+ 229              		.loc 1 51 9 is_stmt 1 view .LVU48
+ 230              		.loc 1 51 20 is_stmt 0 view .LVU49
+ 231 0018 CDE90C23 		strd	r2, [sp, #48]
+ 232              	.L16:
+  52:Core/Src/inverse_kinematics.c ****     }
+  53:Core/Src/inverse_kinematics.c ****     else
+  54:Core/Src/inverse_kinematics.c ****     {
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_x=(double)((self_pos_time[pos_idx_last(pos_idx)].x-self_pos_time[pos_idx_last(p
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+  57:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 6
+
+
+  58:Core/Src/inverse_kinematics.c ****     }
+  59:Core/Src/inverse_kinematics.c ****     return tmp_vel;
+ 233              		.loc 1 59 5 is_stmt 1 view .LVU50
+ 234              		.loc 1 59 12 is_stmt 0 view .LVU51
+ 235 001c 0EAC     		add	r4, sp, #56
+ 236 001e 08AD     		add	r5, sp, #32
+ 237 0020 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 238 0022 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 239 0024 95E80300 		ldm	r5, {r0, r1}
+ 240 0028 84E80300 		stm	r4, {r0, r1}
+  60:Core/Src/inverse_kinematics.c **** }
+ 241              		.loc 1 60 1 view .LVU52
+ 242 002c 9DED0E0B 		vldr.64	d0, [sp, #56]
+ 243 0030 9DED101B 		vldr.64	d1, [sp, #64]
+ 244 0034 9DED122B 		vldr.64	d2, [sp, #72]
+ 245 0038 15B0     		add	sp, sp, #84
+ 246              	.LCFI5:
+ 247              		.cfi_remember_state
+ 248              		.cfi_def_cfa_offset 36
+ 249              		@ sp needed
+ 250 003a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 251              	.L15:
+ 252              	.LCFI6:
+ 253              		.cfi_restore_state
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 254              		.loc 1 55 9 is_stmt 1 view .LVU53
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 255              		.loc 1 55 47 is_stmt 0 view .LVU54
+ 256 003e 284B     		ldr	r3, .L18+4
+ 257 0040 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 258 0042 FFF7FEFF 		bl	pos_idx_last
+ 259              	.LVL6:
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 260              		.loc 1 55 69 view .LVU55
+ 261 0046 274C     		ldr	r4, .L18+8
+ 262 0048 00EB4003 		add	r3, r0, r0, lsl #1
+ 263 004c 04EBC30B 		add	fp, r4, r3, lsl #3
+ 264 0050 34F93380 		ldrsh	r8, [r4, r3, lsl #3]
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 265              		.loc 1 55 86 view .LVU56
+ 266 0054 FFF7FEFF 		bl	pos_idx_last
+ 267              	.LVL7:
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 268              		.loc 1 55 122 view .LVU57
+ 269 0058 4300     		lsls	r3, r0, #1
+ 270 005a 0193     		str	r3, [sp, #4]
+ 271 005c 00EB4003 		add	r3, r0, r0, lsl #1
+ 272 0060 04EBC30A 		add	r10, r4, r3, lsl #3
+ 273 0064 34F93330 		ldrsh	r3, [r4, r3, lsl #3]
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 274              		.loc 1 55 71 view .LVU58
+ 275 0068 A8EB0300 		sub	r0, r8, r3
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 276              		.loc 1 55 163 view .LVU59
+ 277 006c DBF81090 		ldr	r9, [fp, #16]
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 278              		.loc 1 55 125 view .LVU60
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 7
+
+
+ 279 0070 B0FBF9F0 		udiv	r0, r0, r9
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 280              		.loc 1 55 221 view .LVU61
+ 281 0074 DAF81080 		ldr	r8, [r10, #16]
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 282              		.loc 1 55 23 view .LVU62
+ 283 0078 A0EB0800 		sub	r0, r0, r8
+ 284 007c FFF7FEFF 		bl	__aeabi_ui2d
+ 285              	.LVL8:
+  55:Core/Src/inverse_kinematics.c ****         tmp_vel.vel_y=(double)((self_pos_time[pos_idx_last(pos_idx)].y-self_pos_time[pos_idx_last(p
+ 286              		.loc 1 55 22 view .LVU63
+ 287 0080 CDE90801 		strd	r0, [sp, #32]
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 288              		.loc 1 56 9 is_stmt 1 view .LVU64
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 289              		.loc 1 56 69 is_stmt 0 view .LVU65
+ 290 0084 BBF90200 		ldrsh	r0, [fp, #2]
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 291              		.loc 1 56 122 view .LVU66
+ 292 0088 BAF90230 		ldrsh	r3, [r10, #2]
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 293              		.loc 1 56 71 view .LVU67
+ 294 008c C01A     		subs	r0, r0, r3
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 295              		.loc 1 56 125 view .LVU68
+ 296 008e B0FBF9F0 		udiv	r0, r0, r9
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 297              		.loc 1 56 23 view .LVU69
+ 298 0092 A0EB0800 		sub	r0, r0, r8
+ 299 0096 FFF7FEFF 		bl	__aeabi_ui2d
+ 300              	.LVL9:
+  56:Core/Src/inverse_kinematics.c ****         tmp_vel.w_z=(double)((self_pos_time[pos_idx_last(pos_idx)].ang-self_pos_time[pos_idx_last(p
+ 301              		.loc 1 56 22 view .LVU70
+ 302 009a CDE90A01 		strd	r0, [sp, #40]
+  57:Core/Src/inverse_kinematics.c ****     }
+ 303              		.loc 1 57 9 is_stmt 1 view .LVU71
+  57:Core/Src/inverse_kinematics.c ****     }
+ 304              		.loc 1 57 71 is_stmt 0 view .LVU72
+ 305 009e DAE90223 		ldrd	r2, [r10, #8]
+ 306 00a2 DBE90201 		ldrd	r0, [fp, #8]
+ 307 00a6 FFF7FEFF 		bl	__aeabi_dsub
+ 308              	.LVL10:
+ 309 00aa 0446     		mov	r4, r0
+ 310 00ac 0D46     		mov	r5, r1
+  57:Core/Src/inverse_kinematics.c ****     }
+ 311              		.loc 1 57 127 view .LVU73
+ 312 00ae 4846     		mov	r0, r9
+ 313 00b0 FFF7FEFF 		bl	__aeabi_ui2d
+ 314              	.LVL11:
+ 315 00b4 0246     		mov	r2, r0
+ 316 00b6 0B46     		mov	r3, r1
+ 317 00b8 2046     		mov	r0, r4
+ 318 00ba 2946     		mov	r1, r5
+ 319 00bc FFF7FEFF 		bl	__aeabi_ddiv
+ 320              	.LVL12:
+ 321 00c0 0446     		mov	r4, r0
+ 322 00c2 0D46     		mov	r5, r1
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 8
+
+
+  57:Core/Src/inverse_kinematics.c ****     }
+ 323              		.loc 1 57 21 view .LVU74
+ 324 00c4 4046     		mov	r0, r8
+ 325 00c6 FFF7FEFF 		bl	__aeabi_ui2d
+ 326              	.LVL13:
+ 327 00ca 0246     		mov	r2, r0
+ 328 00cc 0B46     		mov	r3, r1
+ 329 00ce 2046     		mov	r0, r4
+ 330 00d0 2946     		mov	r1, r5
+ 331 00d2 FFF7FEFF 		bl	__aeabi_dsub
+ 332              	.LVL14:
+  57:Core/Src/inverse_kinematics.c ****     }
+ 333              		.loc 1 57 20 view .LVU75
+ 334 00d6 CDE90C01 		strd	r0, [sp, #48]
+ 335 00da 9FE7     		b	.L16
+ 336              	.L19:
+ 337              		.align	2
+ 338              	.L18:
+ 339 00dc 00000000 		.word	.LANCHOR1
+ 340 00e0 00000000 		.word	.LANCHOR0
+ 341 00e4 00000000 		.word	.LANCHOR2
+ 342              		.cfi_endproc
+ 343              	.LFE133:
+ 345              		.global	__aeabi_dadd
+ 346              		.global	__aeabi_dmul
+ 347              		.section	.text.car_kinematics,"ax",%progbits
+ 348              		.align	1
+ 349              		.global	car_kinematics
+ 350              		.syntax unified
+ 351              		.thumb
+ 352              		.thumb_func
+ 354              	car_kinematics:
+ 355              	.LVL15:
+ 356              	.LFB134:
+  61:Core/Src/inverse_kinematics.c **** 
+  62:Core/Src/inverse_kinematics.c **** vel_s car_kinematics(angVel_s* angVel)
+  63:Core/Src/inverse_kinematics.c **** {
+ 357              		.loc 1 63 1 is_stmt 1 view -0
+ 358              		.cfi_startproc
+ 359              		@ args = 0, pretend = 0, frame = 72
+ 360              		@ frame_needed = 0, uses_anonymous_args = 0
+ 361              		.loc 1 63 1 is_stmt 0 view .LVU77
+ 362 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 363              	.LCFI7:
+ 364              		.cfi_def_cfa_offset 36
+ 365              		.cfi_offset 4, -36
+ 366              		.cfi_offset 5, -32
+ 367              		.cfi_offset 6, -28
+ 368              		.cfi_offset 7, -24
+ 369              		.cfi_offset 8, -20
+ 370              		.cfi_offset 9, -16
+ 371              		.cfi_offset 10, -12
+ 372              		.cfi_offset 11, -8
+ 373              		.cfi_offset 14, -4
+ 374 0004 93B0     		sub	sp, sp, #76
+ 375              	.LCFI8:
+ 376              		.cfi_def_cfa_offset 112
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 9
+
+
+ 377 0006 0446     		mov	r4, r0
+  64:Core/Src/inverse_kinematics.c ****     vel_s tmp_vel;
+ 378              		.loc 1 64 5 is_stmt 1 view .LVU78
+  65:Core/Src/inverse_kinematics.c ****     tmp_vel.vel_x=WHEEL_RATIO*(angVel->w_lf+angVel->w_lb+angVel->w_rf+angVel->w_rb)/4;
+ 379              		.loc 1 65 5 view .LVU79
+ 380              		.loc 1 65 38 is_stmt 0 view .LVU80
+ 381 0008 D0E900AB 		ldrd	r10, [r0]
+ 382              		.loc 1 65 51 view .LVU81
+ 383 000c D0E90289 		ldrd	r8, [r0, #8]
+ 384              		.loc 1 65 44 view .LVU82
+ 385 0010 4246     		mov	r2, r8
+ 386 0012 4B46     		mov	r3, r9
+ 387 0014 5046     		mov	r0, r10
+ 388              	.LVL16:
+ 389              		.loc 1 65 44 view .LVU83
+ 390 0016 5946     		mov	r1, fp
+ 391 0018 FFF7FEFF 		bl	__aeabi_dadd
+ 392              	.LVL17:
+ 393              		.loc 1 65 64 view .LVU84
+ 394 001c D4E90467 		ldrd	r6, [r4, #16]
+ 395              		.loc 1 65 57 view .LVU85
+ 396 0020 3246     		mov	r2, r6
+ 397 0022 3B46     		mov	r3, r7
+ 398 0024 FFF7FEFF 		bl	__aeabi_dadd
+ 399              	.LVL18:
+ 400              		.loc 1 65 77 view .LVU86
+ 401 0028 D4E90645 		ldrd	r4, [r4, #24]
+ 402              	.LVL19:
+ 403              		.loc 1 65 70 view .LVU87
+ 404 002c 2246     		mov	r2, r4
+ 405 002e 2B46     		mov	r3, r5
+ 406 0030 FFF7FEFF 		bl	__aeabi_dadd
+ 407              	.LVL20:
+ 408              		.loc 1 65 30 view .LVU88
+ 409 0034 2AA3     		adr	r3, .L22
+ 410 0036 D3E90023 		ldrd	r2, [r3]
+ 411 003a FFF7FEFF 		bl	__aeabi_dmul
+ 412              	.LVL21:
+ 413              		.loc 1 65 84 view .LVU89
+ 414 003e 0022     		movs	r2, #0
+ 415 0040 2B4B     		ldr	r3, .L22+16
+ 416 0042 FFF7FEFF 		bl	__aeabi_dmul
+ 417              	.LVL22:
+ 418              		.loc 1 65 18 view .LVU90
+ 419 0046 CDE90601 		strd	r0, [sp, #24]
+  66:Core/Src/inverse_kinematics.c ****     tmp_vel.vel_y=WHEEL_RATIO*(-angVel->w_lf+angVel->w_lb+angVel->w_rf-angVel->w_rb)/4;
+ 420              		.loc 1 66 5 is_stmt 1 view .LVU91
+ 421              		.loc 1 66 45 is_stmt 0 view .LVU92
+ 422 004a 5246     		mov	r2, r10
+ 423 004c 5B46     		mov	r3, fp
+ 424 004e 4046     		mov	r0, r8
+ 425 0050 4946     		mov	r1, r9
+ 426 0052 FFF7FEFF 		bl	__aeabi_dsub
+ 427              	.LVL23:
+ 428 0056 0246     		mov	r2, r0
+ 429 0058 0B46     		mov	r3, r1
+ 430              		.loc 1 66 58 view .LVU93
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 10
+
+
+ 431 005a 3046     		mov	r0, r6
+ 432 005c 3946     		mov	r1, r7
+ 433 005e FFF7FEFF 		bl	__aeabi_dadd
+ 434              	.LVL24:
+ 435              		.loc 1 66 71 view .LVU94
+ 436 0062 2246     		mov	r2, r4
+ 437 0064 2B46     		mov	r3, r5
+ 438 0066 FFF7FEFF 		bl	__aeabi_dsub
+ 439              	.LVL25:
+ 440              		.loc 1 66 30 view .LVU95
+ 441 006a 1DA3     		adr	r3, .L22
+ 442 006c D3E90023 		ldrd	r2, [r3]
+ 443 0070 FFF7FEFF 		bl	__aeabi_dmul
+ 444              	.LVL26:
+ 445              		.loc 1 66 85 view .LVU96
+ 446 0074 0022     		movs	r2, #0
+ 447 0076 1E4B     		ldr	r3, .L22+16
+ 448 0078 FFF7FEFF 		bl	__aeabi_dmul
+ 449              	.LVL27:
+ 450              		.loc 1 66 18 view .LVU97
+ 451 007c CDE90801 		strd	r0, [sp, #32]
+  67:Core/Src/inverse_kinematics.c ****     tmp_vel.w_z=WHEEL_RATIO*((-angVel->w_lf-angVel->w_lb+angVel->w_rf+angVel->w_rb)/(4*CAR_LENTH*ta
+ 452              		.loc 1 67 5 is_stmt 1 view .LVU98
+ 453              		.loc 1 67 31 is_stmt 0 view .LVU99
+ 454 0080 5046     		mov	r0, r10
+ 455 0082 0BF10041 		add	r1, fp, #-2147483648
+ 456              		.loc 1 67 44 view .LVU100
+ 457 0086 4246     		mov	r2, r8
+ 458 0088 4B46     		mov	r3, r9
+ 459 008a FFF7FEFF 		bl	__aeabi_dsub
+ 460              	.LVL28:
+ 461 008e 0246     		mov	r2, r0
+ 462 0090 0B46     		mov	r3, r1
+ 463              		.loc 1 67 57 view .LVU101
+ 464 0092 3046     		mov	r0, r6
+ 465 0094 3946     		mov	r1, r7
+ 466 0096 FFF7FEFF 		bl	__aeabi_dadd
+ 467              	.LVL29:
+ 468 009a 0246     		mov	r2, r0
+ 469 009c 0B46     		mov	r3, r1
+ 470              		.loc 1 67 70 view .LVU102
+ 471 009e 2046     		mov	r0, r4
+ 472 00a0 2946     		mov	r1, r5
+ 473 00a2 FFF7FEFF 		bl	__aeabi_dadd
+ 474              	.LVL30:
+ 475              		.loc 1 67 84 view .LVU103
+ 476 00a6 10A3     		adr	r3, .L22+8
+ 477 00a8 D3E90023 		ldrd	r2, [r3]
+ 478 00ac FFF7FEFF 		bl	__aeabi_ddiv
+ 479              	.LVL31:
+ 480              		.loc 1 67 28 view .LVU104
+ 481 00b0 0BA3     		adr	r3, .L22
+ 482 00b2 D3E90023 		ldrd	r2, [r3]
+ 483 00b6 FFF7FEFF 		bl	__aeabi_dmul
+ 484              	.LVL32:
+ 485              		.loc 1 67 16 view .LVU105
+ 486 00ba CDE90A01 		strd	r0, [sp, #40]
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 11
+
+
+  68:Core/Src/inverse_kinematics.c ****     return tmp_vel;
+ 487              		.loc 1 68 5 is_stmt 1 view .LVU106
+ 488              		.loc 1 68 12 is_stmt 0 view .LVU107
+ 489 00be 0CAC     		add	r4, sp, #48
+ 490 00c0 06AD     		add	r5, sp, #24
+ 491 00c2 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 492 00c4 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 493 00c6 95E80300 		ldm	r5, {r0, r1}
+ 494 00ca 84E80300 		stm	r4, {r0, r1}
+  69:Core/Src/inverse_kinematics.c **** }
+ 495              		.loc 1 69 1 view .LVU108
+ 496 00ce 9DED0C0B 		vldr.64	d0, [sp, #48]
+ 497 00d2 9DED0E1B 		vldr.64	d1, [sp, #56]
+ 498 00d6 9DED102B 		vldr.64	d2, [sp, #64]
+ 499 00da 13B0     		add	sp, sp, #76
+ 500              	.LCFI9:
+ 501              		.cfi_def_cfa_offset 36
+ 502              		@ sp needed
+ 503 00dc BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 504              	.L23:
+ 505              		.align	3
+ 506              	.L22:
+ 507 00e0 3BDF4F8D 		.word	-1924145349
+ 508 00e4 976EA23F 		.word	1067609751
+ 509 00e8 F7C74C5B 		.word	1531758583
+ 510 00ec 6532E33F 		.word	1071854181
+ 511 00f0 0000D03F 		.word	1070596096
+ 512              		.cfi_endproc
+ 513              	.LFE134:
+ 515              		.section	.text.car_inv_kinematics,"ax",%progbits
+ 516              		.align	1
+ 517              		.global	car_inv_kinematics
+ 518              		.syntax unified
+ 519              		.thumb
+ 520              		.thumb_func
+ 522              	car_inv_kinematics:
+ 523              	.LVL33:
+ 524              	.LFB135:
+  70:Core/Src/inverse_kinematics.c **** 
+  71:Core/Src/inverse_kinematics.c **** angVel_s car_inv_kinematics(vel_s* vel)
+  72:Core/Src/inverse_kinematics.c **** {
+ 525              		.loc 1 72 1 is_stmt 1 view -0
+ 526              		.cfi_startproc
+ 527              		@ args = 0, pretend = 0, frame = 96
+ 528              		@ frame_needed = 0, uses_anonymous_args = 0
+ 529              		.loc 1 72 1 is_stmt 0 view .LVU110
+ 530 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 531              	.LCFI10:
+ 532              		.cfi_def_cfa_offset 36
+ 533              		.cfi_offset 4, -36
+ 534              		.cfi_offset 5, -32
+ 535              		.cfi_offset 6, -28
+ 536              		.cfi_offset 7, -24
+ 537              		.cfi_offset 8, -20
+ 538              		.cfi_offset 9, -16
+ 539              		.cfi_offset 10, -12
+ 540              		.cfi_offset 11, -8
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 12
+
+
+ 541              		.cfi_offset 14, -4
+ 542 0004 99B0     		sub	sp, sp, #100
+ 543              	.LCFI11:
+ 544              		.cfi_def_cfa_offset 136
+ 545 0006 0446     		mov	r4, r0
+  73:Core/Src/inverse_kinematics.c ****     angVel_s tmp_angvel;
+ 546              		.loc 1 73 5 is_stmt 1 view .LVU111
+  74:Core/Src/inverse_kinematics.c ****     tmp_angvel.w_lf=(vel->vel_x-tan(WHEEL_ANG)*vel->vel_y-(CAR_LENTH*tan(WHEEL_ANG)+CAR_WIDTH)*vel-
+ 547              		.loc 1 74 5 view .LVU112
+ 548              		.loc 1 74 25 is_stmt 0 view .LVU113
+ 549 0008 D0E900AB 		ldrd	r10, [r0]
+ 550              		.loc 1 74 47 view .LVU114
+ 551 000c 36A3     		adr	r3, .L26
+ 552 000e D3E90023 		ldrd	r2, [r3]
+ 553 0012 D0E90201 		ldrd	r0, [r0, #8]
+ 554              	.LVL34:
+ 555              		.loc 1 74 47 view .LVU115
+ 556 0016 FFF7FEFF 		bl	__aeabi_dmul
+ 557              	.LVL35:
+ 558 001a 8046     		mov	r8, r0
+ 559 001c 8946     		mov	r9, r1
+ 560              		.loc 1 74 32 view .LVU116
+ 561 001e 0246     		mov	r2, r0
+ 562 0020 0B46     		mov	r3, r1
+ 563 0022 5046     		mov	r0, r10
+ 564 0024 5946     		mov	r1, fp
+ 565 0026 FFF7FEFF 		bl	__aeabi_dsub
+ 566              	.LVL36:
+ 567 002a 0646     		mov	r6, r0
+ 568 002c 0F46     		mov	r7, r1
+ 569              		.loc 1 74 95 view .LVU117
+ 570 002e 30A3     		adr	r3, .L26+8
+ 571 0030 D3E90023 		ldrd	r2, [r3]
+ 572 0034 D4E90401 		ldrd	r0, [r4, #16]
+ 573 0038 FFF7FEFF 		bl	__aeabi_dmul
+ 574              	.LVL37:
+ 575 003c 0446     		mov	r4, r0
+ 576              	.LVL38:
+ 577              		.loc 1 74 95 view .LVU118
+ 578 003e 0D46     		mov	r5, r1
+ 579              		.loc 1 74 58 view .LVU119
+ 580 0040 0246     		mov	r2, r0
+ 581 0042 0B46     		mov	r3, r1
+ 582 0044 3046     		mov	r0, r6
+ 583 0046 3946     		mov	r1, r7
+ 584 0048 FFF7FEFF 		bl	__aeabi_dsub
+ 585              	.LVL39:
+ 586              		.loc 1 74 105 view .LVU120
+ 587 004c 2AA3     		adr	r3, .L26+16
+ 588 004e D3E90023 		ldrd	r2, [r3]
+ 589 0052 FFF7FEFF 		bl	__aeabi_ddiv
+ 590              	.LVL40:
+ 591              		.loc 1 74 20 view .LVU121
+ 592 0056 CDE91001 		strd	r0, [sp, #64]
+  75:Core/Src/inverse_kinematics.c ****     tmp_angvel.w_lb=(vel->vel_x+tan(WHEEL_ANG)*vel->vel_y-(CAR_LENTH*tan(WHEEL_ANG)+CAR_WIDTH)*vel-
+ 593              		.loc 1 75 5 is_stmt 1 view .LVU122
+ 594              		.loc 1 75 32 is_stmt 0 view .LVU123
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 13
+
+
+ 595 005a 4246     		mov	r2, r8
+ 596 005c 4B46     		mov	r3, r9
+ 597 005e 5046     		mov	r0, r10
+ 598 0060 5946     		mov	r1, fp
+ 599 0062 FFF7FEFF 		bl	__aeabi_dadd
+ 600              	.LVL41:
+ 601 0066 8046     		mov	r8, r0
+ 602 0068 8946     		mov	r9, r1
+ 603              		.loc 1 75 58 view .LVU124
+ 604 006a 2246     		mov	r2, r4
+ 605 006c 2B46     		mov	r3, r5
+ 606 006e FFF7FEFF 		bl	__aeabi_dsub
+ 607              	.LVL42:
+ 608              		.loc 1 75 105 view .LVU125
+ 609 0072 21A3     		adr	r3, .L26+16
+ 610 0074 D3E90023 		ldrd	r2, [r3]
+ 611 0078 FFF7FEFF 		bl	__aeabi_ddiv
+ 612              	.LVL43:
+ 613              		.loc 1 75 20 view .LVU126
+ 614 007c CDE91201 		strd	r0, [sp, #72]
+  76:Core/Src/inverse_kinematics.c ****     tmp_angvel.w_rf=(vel->vel_x+tan(WHEEL_ANG)*vel->vel_y+(CAR_LENTH*tan(WHEEL_ANG)+CAR_WIDTH)*vel-
+ 615              		.loc 1 76 5 is_stmt 1 view .LVU127
+ 616              		.loc 1 76 58 is_stmt 0 view .LVU128
+ 617 0080 4246     		mov	r2, r8
+ 618 0082 4B46     		mov	r3, r9
+ 619 0084 2046     		mov	r0, r4
+ 620 0086 2946     		mov	r1, r5
+ 621 0088 FFF7FEFF 		bl	__aeabi_dadd
+ 622              	.LVL44:
+ 623              		.loc 1 76 105 view .LVU129
+ 624 008c 1AA3     		adr	r3, .L26+16
+ 625 008e D3E90023 		ldrd	r2, [r3]
+ 626 0092 FFF7FEFF 		bl	__aeabi_ddiv
+ 627              	.LVL45:
+ 628              		.loc 1 76 20 view .LVU130
+ 629 0096 CDE91401 		strd	r0, [sp, #80]
+  77:Core/Src/inverse_kinematics.c ****     tmp_angvel.w_rb=(vel->vel_x-tan(WHEEL_ANG)*vel->vel_y+(CAR_LENTH*tan(WHEEL_ANG)+CAR_WIDTH)*vel-
+ 630              		.loc 1 77 5 is_stmt 1 view .LVU131
+ 631              		.loc 1 77 58 is_stmt 0 view .LVU132
+ 632 009a 2246     		mov	r2, r4
+ 633 009c 2B46     		mov	r3, r5
+ 634 009e 3046     		mov	r0, r6
+ 635 00a0 3946     		mov	r1, r7
+ 636 00a2 FFF7FEFF 		bl	__aeabi_dadd
+ 637              	.LVL46:
+ 638              		.loc 1 77 105 view .LVU133
+ 639 00a6 14A3     		adr	r3, .L26+16
+ 640 00a8 D3E90023 		ldrd	r2, [r3]
+ 641 00ac FFF7FEFF 		bl	__aeabi_ddiv
+ 642              	.LVL47:
+ 643              		.loc 1 77 20 view .LVU134
+ 644 00b0 CDE91601 		strd	r0, [sp, #88]
+  78:Core/Src/inverse_kinematics.c ****     return tmp_angvel;
+ 645              		.loc 1 78 5 is_stmt 1 view .LVU135
+ 646              		.loc 1 78 12 is_stmt 0 view .LVU136
+ 647 00b4 0DF1200C 		add	ip, sp, #32
+ 648 00b8 0DF1400E 		add	lr, sp, #64
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 14
+
+
+ 649 00bc BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 650 00c0 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 651 00c4 9EE80F00 		ldm	lr, {r0, r1, r2, r3}
+ 652 00c8 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+  79:Core/Src/inverse_kinematics.c **** }...
+ 653              		.loc 1 79 1 view .LVU137
+ 654 00cc 9DED080B 		vldr.64	d0, [sp, #32]
+ 655 00d0 9DED0A1B 		vldr.64	d1, [sp, #40]
+ 656 00d4 9DED0C2B 		vldr.64	d2, [sp, #48]
+ 657 00d8 9DED0E3B 		vldr.64	d3, [sp, #56]
+ 658 00dc 19B0     		add	sp, sp, #100
+ 659              	.LCFI12:
+ 660              		.cfi_def_cfa_offset 36
+ 661              		@ sp needed
+ 662 00de BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 663              	.L27:
+ 664 00e2 00BFAFF3 		.align	3
+ 664      0080
+ 665              	.L26:
+ 666 00e8 88293350 		.word	1345530248
+ 667 00ec 64FEEF3F 		.word	1072692836
+ 668 00f0 9161E6F4 		.word	-186228335
+ 669 00f4 FECBCC3F 		.word	1070386174
+ 670 00f8 3BDF4F8D 		.word	-1924145349
+ 671 00fc 976EA23F 		.word	1067609751
+ 672              		.cfi_endproc
+ 673              	.LFE135:
+ 675              		.global	self_pos_time
+ 676              		.section	.bss.data_flag,"aw",%nobits
+ 677              		.set	.LANCHOR1,. + 0
+ 680              	data_flag:
+ 681 0000 00       		.space	1
+ 682              		.section	.bss.pos_idx,"aw",%nobits
+ 683              		.set	.LANCHOR0,. + 0
+ 686              	pos_idx:
+ 687 0000 00       		.space	1
+ 688              		.section	.bss.self_pos_time,"aw",%nobits
+ 689              		.align	3
+ 690              		.set	.LANCHOR2,. + 0
+ 693              	self_pos_time:
+ 694 0000 00000000 		.space	240
+ 694      00000000 
+ 694      00000000 
+ 694      00000000 
+ 694      00000000 
+ 695              		.text
+ 696              	.Letext0:
+ 697              		.file 2 "d:\\11.2 2022.02\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 698              		.file 3 "d:\\11.2 2022.02\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 699              		.file 4 "Core/Inc/zigbee_edc24.h"
+ 700              		.file 5 "Core/Inc/inverse_kinematics.h"
+ARM GAS  C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s 			page 15
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 inverse_kinematics.c
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:20     .text.pos_idx_last:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:25     .text.pos_idx_last:00000000 pos_idx_last
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:55     .text.self_position_init:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:61     .text.self_position_init:00000000 self_position_init
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:82     .text.self_position_init:0000000c $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:88     .text.self_position_update:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:94     .text.self_position_update:00000000 self_position_update
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:177    .text.self_position_update:00000058 $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:187    .text.calculate_vel:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:193    .text.calculate_vel:00000000 calculate_vel
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:339    .text.calculate_vel:000000dc $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:348    .text.car_kinematics:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:354    .text.car_kinematics:00000000 car_kinematics
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:507    .text.car_kinematics:000000e0 $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:516    .text.car_inv_kinematics:00000000 $t
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:522    .text.car_inv_kinematics:00000000 car_inv_kinematics
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:666    .text.car_inv_kinematics:000000e8 $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:693    .bss.self_pos_time:00000000 self_pos_time
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:680    .bss.data_flag:00000000 data_flag
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:681    .bss.data_flag:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:686    .bss.pos_idx:00000000 pos_idx
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:687    .bss.pos_idx:00000000 $d
+C:\Users\liuda\AppData\Local\Temp\ccdz8F8c.s:689    .bss.self_pos_time:00000000 $d
+
+UNDEFINED SYMBOLS
+getVehiclePos
+__aeabi_ui2d
+__aeabi_dsub
+__aeabi_ddiv
+__aeabi_dadd
+__aeabi_dmul

@@ -102,10 +102,10 @@ int main(void)
   MX_TIM8_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  wheel_init(&wheel_lb, &htim1, TIM_CHANNEL_1, encoder_00_Pin, encoder_01_Pin, encoder_00_GPIO_Port, &htim2); 
-  wheel_init(&wheel_rb, &htim1, TIM_CHANNEL_2, encoder_10_Pin, encoder_11_Pin, encoder_10_GPIO_Port, &htim3); 
-  wheel_init(&wheel_lf, &htim1, TIM_CHANNEL_3, encoder_20_Pin, encoder_21_Pin, encoder_20_GPIO_Port, &htim4); 
-  wheel_init(&wheel_rf, &htim1, TIM_CHANNEL_4, encoder_30_Pin, encoder_31_Pin, encoder_30_GPIO_Port, &htim5); 
+  wheel_init(&wheel_lb, &htim3, TIM_CHANNEL_1, lb_1_Pin, lb_2_Pin, lb_1_GPIO_Port, &htim5); 
+  wheel_init(&wheel_rb, &htim3, TIM_CHANNEL_2, rb_1_Pin, rb_2_Pin, rb_1_GPIO_Port, &htim1); 
+  wheel_init(&wheel_lf, &htim3, TIM_CHANNEL_4, lf_1_Pin, lf_2_Pin, lf_1_GPIO_Port, &htim8); 
+  wheel_init(&wheel_rf, &htim3, TIM_CHANNEL_3, rf_1_Pin, rf_2_Pin, rf_1_GPIO_Port, &htim4); 
 
   uint32_t time_last = HAL_GetTick();
   angVel_s act_angVel = {0, 0, 0, 0};

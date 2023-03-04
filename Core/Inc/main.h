@@ -57,22 +57,22 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define encoder_00_Pin GPIO_PIN_0
-#define encoder_00_GPIO_Port GPIOC
-#define encoder_01_Pin GPIO_PIN_1
-#define encoder_01_GPIO_Port GPIOC
-#define encoder_10_Pin GPIO_PIN_2
-#define encoder_10_GPIO_Port GPIOC
-#define encoder_11_Pin GPIO_PIN_3
-#define encoder_11_GPIO_Port GPIOC
-#define encoder_20_Pin GPIO_PIN_4
-#define encoder_20_GPIO_Port GPIOC
-#define encoder_21_Pin GPIO_PIN_5
-#define encoder_21_GPIO_Port GPIOC
-#define encoder_30_Pin GPIO_PIN_0
-#define encoder_30_GPIO_Port GPIOB
-#define encoder_31_Pin GPIO_PIN_1
-#define encoder_31_GPIO_Port GPIOB
+#define lb_1_Pin GPIO_PIN_0
+#define lb_1_GPIO_Port GPIOC
+#define lb_2_Pin GPIO_PIN_1
+#define lb_2_GPIO_Port GPIOC
+#define rb_1_Pin GPIO_PIN_13
+#define rb_1_GPIO_Port GPIOE
+#define rb_2_Pin GPIO_PIN_14
+#define rb_2_GPIO_Port GPIOE
+#define rf_1_Pin GPIO_PIN_9
+#define rf_1_GPIO_Port GPIOD
+#define rf_2_Pin GPIO_PIN_10
+#define rf_2_GPIO_Port GPIOD
+#define lf_1_Pin GPIO_PIN_6
+#define lf_1_GPIO_Port GPIOB
+#define lf_2_Pin GPIO_PIN_7
+#define lf_2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
